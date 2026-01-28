@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Manager - Round Table</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div id="game-view">
+            <div class="table-container" id="poker-table">
+                <!-- Pool element in center -->
+                <div id="central-pool-box" class="pool-box">
+                    <div class="pool-label">TOTAL POOL</div>
+                    <div id="pot-amount-center" class="pool-value">₹0</div>
+                </div>
+            </div>
+
+            <div class="interaction-panel">
+                <div class="admin-controls-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 200%; margin-left: -50%;">
+                    <div class="card" id="admin-controls-card" style="display: block;">
+                        <div id="moderator-controls" class="mod-controls active">
+                            <hr>
+                            <h3>Admin Controls</h3>
+                            
+                            <div class="mod-section">
+                                <label>Send Money to Player:</label>
+                                <div id="send-money-selection-grid" class="winner-selection-grid"></div>
+                                <div class="quick-bet-buttons" style="margin-top: 10px;">
+                                    <button class="btn-primary" onclick="handleQuickSend(100)">+₹100</button>
+                                    <button class="btn-primary" onclick="handleQuickSend(500)">+₹500</button>
+                                    <button class="btn-primary" onclick="handleQuickSend(1000)">+₹1000</button>
+                                </div>
+                            </div>
+
+                            <div class="mod-section">
+                                <label>Admin Ledger (Coins given):</label>
+                                <table id="admin-ledger-table" class="ledger-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Player</th>
+                                            <th>Admin Given</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                                <div style="margin-top:10px;">
+                                    <button class="btn-danger" onclick="handleResetRoom()">Reset Room</button>
+                                    <button class="btn-danger" onclick="handleSettleUp()" style="background: #28a745;">Settle Up</button>
+                                </div>
+                            </div>
+
+                            <div class="mod-section">
+                                <label>Select Winner (Click to select, click again to confirm):</label>
+                                <div id="winner-selection-grid" class="winner-selection-grid"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" id="player-bets-card" style="display: block;">
+                        <div class="mod-controls">
+                            <hr>
+                            <h3>Quick Bets</h3>
+                            <div class="mod-section">
+                                <div class="quick-bets-container">
+                                    <button class="btn-quick-bet" onclick="handleQuickBet(50)">50</button>
+                                    <button class="btn-quick-bet" onclick="handleQuickBet(100)">100</button>
+                                    <button class="btn-quick-bet" onclick="handleQuickBet(150)">150</button>
+                                    <button class="btn-quick-bet" onclick="handleQuickBet(200)">200</button>
+                                    <button class="btn-quick-bet" onclick="handleQuickBet(250)">250</button>
+                                    <button class="btn-quick-bet" onclick="handleQuickBet(300)">300</button>
+                                    <button class="btn-quick-bet" onclick="handleQuickBet(500)">500</button>
+                                    <button class="btn-quick-bet" onclick="handleQuickBet(1000)">1000</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="errorMessage" style="display:none; position:fixed; top:20px; right:20px; background:#ff4444; color:white; padding:15px; border-radius:8px; z-index:2000; box-shadow: 0 4px 12px rgba(0,0,0,0.2);"></div>
+    <div id="notificationMessage" style="display:none; position:fixed; top:20px; right:20px; background:#4caf50; color:white; padding:15px; border-radius:8px; z-index:2000; box-shadow: 0 4px 12px rgba(0,0,0,0.2); font-weight: bold;"></div>
+
+    <script>
+        // Log all console messages to a visible div for debugging if needed
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            // Optional: add to a debug overlay if we still have issues
+        };
+
+        let socket;
+        let myId = null;
+        let isModerator = false;
+        let players = [];
+        let pot = 0;
+        let selectedWinnerId = null; // Track single click selection
+        let selectedTargetId = null; // Track selection for sending money
+
+        // Initialize Socket
+        try {
+            socket = io({
+                reconnectionAttempts: 5,
+                timeout: 10000
+            });
+
+            socket.on('connect', () => {
+                console.log('Connected! ID:', socket.id);
+                attemptJoin();
+            });
+
+            socket.on('connect_error', (error) => {
+                console.error('Connection Error:', error);
+                showError('Connection failed: ' + error.message);
+            });
+
+            socket.on('joined', (data) => {
+                console.log('Successfully joined:', data);
+                myId = data.player.socketId;
+                isModerator = data.isModerator;
+                updateMyInfo(data.player);
+            });
+
+            socket.on('gameState', (state) => {
+                console.log('State Update:', state);
+                players = state.players;
+                pot = state.pot;
+                window.currentLedger = state.ledger || {};
+                
+                const me = players.find(p => p.socketId === (myId || socket.id));
+                if (me) {
+                    myId = me.socketId;
+                    isModerator = me.isModerator;
+                    updateMyInfo(me);
+                }
+                
+                updateTable();
+                updatePot();
+                updateModeratorControls();
+                updateLedgerTable();
+            });
+
+            socket.on('moneyAdded', (data) => {
+                animateCoin(data.socketId, data.amount);
+            });
+
+            socket.on('winnerSelected', (data) => {
+                const winnerSlot = document.getElementById(`player-slot-${data.winnerSocketId}`);
+                if (winnerSlot) {
+                    winnerSlot.classList.add('winner-glow');
+                    setTimeout(() => winnerSlot.classList.remove('winner-glow'), 3000);
+                }
+            });
+
+            socket.on('poolReset', () => {
+                showNotification('The pool has been reset by the moderator.');
+            });
+
+            socket.on('showSettlementToAll', (settlements) => {
+                showPlayerSettlement(settlements);
+            });
+
+            socket.on('error', (err) => {
+                console.error('Server Error:', err);
+                showError(err.message);
+            });
+
+        } catch (e) {
+            console.error('Socket.io initialization failed:', e);
+            showError('Could not load game engine.');
+        }
+
+        function attemptJoin() {
+            const name = sessionStorage.getItem('playerName');
+            const initialWallet = sessionStorage.getItem('initialWallet');
+            const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+            const roomId = sessionStorage.getItem('roomId');
+            const roomPassword = sessionStorage.getItem('roomPassword');
+            const adminPassword = sessionStorage.getItem('adminPassword');
+            
+            if (!name) {
+                console.log('No name found, going back to login');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            console.log('Joining as:', name, 'Wallet:', initialWallet, 'isAdmin:', isAdmin, 'room:', roomId);
+            socket.emit('joinRoom', { name, initialWallet, isAdmin, roomId, roomPassword, adminPassword });
+        }
+
+        function updateMyInfo(player) {
+            // Player info is now displayed on the table slots
+            console.log('My Info updated:', player.name, 'Wallet:', player.wallet);
+        }
+
+        function updatePot() {
+            const centerDisplay = document.getElementById('pot-amount-center');
+            if (centerDisplay) {
+                centerDisplay.textContent = `₹${pot}`;
+            }
+        }
+
+        function updateTable() {
+            const table = document.getElementById('poker-table');
+            const existingSlots = table.querySelectorAll('.player-slot');
+            existingSlots.forEach(s => s.remove());
+
+            // Separate players from moderator
+            const regularPlayers = players.filter(p => !p.isModerator);
+            const moderator = players.find(p => p.isModerator);
+
+            // Radius to put them on the rim (table is 100% width, max 800px)
+            const tableWidth = table.offsetWidth;
+            const tableHeight = table.offsetHeight;
+            const baseRadius = Math.min(tableWidth, tableHeight) / 2;
+            const radiusPadding = tableWidth < 520 ? 50 : 35;
+            const radius = Math.max(0, baseRadius - radiusPadding); // Keep slots within bounds on mobile
+            const centerX = tableWidth / 2;
+            const centerY = tableHeight / 2;
+
+            // Render regular players on the rim
+            if (regularPlayers.length > 0) {
+                regularPlayers.forEach((player, index) => {
+                    const angle = (index / regularPlayers.length) * 2 * Math.PI - Math.PI / 2;
+                    // Position exactly on the rim. Adjusting by -40 (half of slot size) to center the slot on the line
+                    const x = centerX + radius * Math.cos(angle) - 40;
+                    const y = centerY + radius * Math.sin(angle) - 40;
+
+                    const slot = document.createElement('div');
+                slot.className = 'player-slot';
+                slot.id = `player-slot-${player.socketId}`;
+                slot.style.left = `${x}px`;
+                slot.style.top = `${y}px`;
+
+                // Update the bid label if it already exists to avoid full redraw if possible,
+                // but for now we're clearing and rebuilding. Let's make sure the data is correct.
+                const displayBid = player.lastBid || 0;
+                const displayTotal = player.totalBid || 0;
+
+                slot.innerHTML = `
+                    <div class="player-bid-container">
+                        <div class="player-last-bid total-bid active" id="total-${player.socketId}">
+                            Total Bid: ₹${displayTotal}
+                        </div>
+                        <div class="player-last-bid latest-bid active" id="bid-${player.socketId}">
+                            Latest Bid: ₹${displayBid}
+                        </div>
+                    </div>
+                    <div class="player-icon">${player.isModerator ? '👑' : '👤'}</div>
+                    <div class="player-info-row">
+                        <span class="player-wallet-label">₹${player.wallet}</span>
+                        <span class="player-name-label">${player.name}${player.isModerator ? ' (Admin)' : ''}</span>
+                    </div>
+                `;
+                table.appendChild(slot);
+                });
+            }
+        }
+
+        function createPlayerSlot(player, x, y) {
+            const slot = document.createElement('div');
+            slot.className = 'player-slot';
+            slot.id = `player-slot-${player.socketId}`;
+            slot.style.left = `${x}px`;
+            slot.style.top = `${y}px`;
+
+            slot.innerHTML = `
+                <div class="player-bid-container">
+                    <div class="player-last-bid total-bid active" id="total-${player.socketId}">
+                        Total Bid: ₹${player.totalBid || 0}
+                    </div>
+                    <div class="player-last-bid latest-bid active" id="bid-${player.socketId}">
+                        Latest Bid: ₹${player.lastBid || 0}
+                    </div>
+                </div>
+                <div class="player-icon">${player.isModerator ? '👑' : '👤'}</div>
+                <div class="player-info-row">
+                    <span class="player-wallet-label">₹${player.wallet}</span>
+                    <span class="player-name-label">${player.name}${player.isModerator ? ' (Admin)' : ''}</span>
+                </div>
+            `;
+            return slot;
+        }
+
+        function updateModeratorControls() {
+            const modControls = document.getElementById('moderator-controls');
+            const adminCard = document.getElementById('admin-controls-card');
+            const winnerGrid = document.getElementById('winner-selection-grid');
+            const sendMoneyGrid = document.getElementById('send-money-selection-grid');
+            
+            if (isModerator) {
+                modControls.classList.add('active');
+                adminCard.style.display = 'block';
+                
+                // Update grids
+                winnerGrid.innerHTML = '';
+                sendMoneyGrid.innerHTML = '';
+
+                players.forEach(player => {
+                    // Don't show admin in selection lists
+                    if (player.isModerator) return;
+
+                    // Create winner box
+                    const winnerBox = document.createElement('div');
+                    winnerBox.className = 'winner-box';
+                    winnerBox.dataset.socketId = player.socketId;
+                    if (selectedWinnerId === player.socketId) {
+                        winnerBox.classList.add('selected');
+                    }
+                    winnerBox.textContent = player.name;
+                    winnerBox.onclick = () => handleWinnerClick(player.socketId);
+                    winnerGrid.appendChild(winnerBox);
+
+                    // Create send money box
+                    const sendBox = document.createElement('div');
+                    sendBox.className = 'winner-box';
+                    sendBox.dataset.socketId = player.socketId;
+                    if (selectedTargetId === player.socketId) {
+                        sendBox.classList.add('selected');
+                    }
+                    sendBox.textContent = player.name;
+                    sendBox.onclick = () => handleTargetClick(player.socketId);
+                    sendMoneyGrid.appendChild(sendBox);
+                });
+            } else {
+                modControls.classList.remove('active');
+                adminCard.style.display = 'none';
+            }
+        }
+
+        function handleTargetClick(socketId) {
+            selectedTargetId = socketId;
+            updateModeratorControls();
+        }
+
+        function handleSettleUp() {
+            const ledger = window.currentLedger || {};
+            let settlements = [];
+
+            players
+                .filter(player => !player.isModerator)
+                .forEach(player => {
+                    const adminGiven = ledger[player.name] || 0;
+                    const currentWallet = player.wallet;
+                    const net = currentWallet - adminGiven;
+                    settlements.push({ name: player.name, net, adminGiven, currentWallet });
+                });
+
+            showSettlementPopup(settlements);
+        }
+
+        function showSettlementPopup(settlements) {
+            const table = document.getElementById('poker-table');
+            const popup = document.createElement('div');
+            popup.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                border-radius: 16px;
+                padding: 30px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                z-index: 2000;
+                min-width: 300px;
+                text-align: center;
+            `;
+
+            let html = '<h2 style="margin-bottom:20px;">Settlement</h2>';
+            settlements.forEach(s => {
+                const color = s.net >= 0 ? '#ffd700' : '#ff4444';
+                const emoji = s.net >= 0 ? '🎉' : '😢';
+                html += `<div style="font-size:1.2em; margin:10px 0; color:${color}; font-weight:bold;">${emoji} ${s.name}: ${s.net >= 0 ? '+' : ''}₹${s.net}</div>`;
+                if (s.net < 0) playCryingSound();
+            });
+            html += '<button onclick="this.parentElement.remove()" style="margin-top:20px; padding:10px 20px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer;">Close</button>';
+            popup.innerHTML = html;
+            table.appendChild(popup);
+
+            // Animate winners
+            settlements.filter(s => s.net > 0).forEach(s => {
+                confetti(s.name);
+            });
+
+            // Show settlement on all players' screens
+            socket.emit('showSettlementToAll', settlements);
+        }
+
+        function confetti(playerName) {
+            // Play applause sound for winners
+            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+            audio.volume = 0.3;
+            audio.play().catch(() => {});
+
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'];
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.style.cssText = `
+                        position: fixed;
+                        width: 8px;
+                        height: 8px;
+                        background: ${colors[Math.floor(Math.random() * colors.length)]};
+                        left: ${Math.random() * window.innerWidth}px;
+                        top: -10px;
+                        z-index: 3000;
+                        border-radius: 50%;
+                    `;
+                    document.body.appendChild(particle);
+                    let y = -10;
+                    const fall = setInterval(() => {
+                        y += 5;
+                        particle.style.top = y + 'px';
+                        if (y > window.innerHeight) {
+                            clearInterval(fall);
+                            particle.remove();
+                        }
+                    }, 20);
+                }, i * 30);
+            }
+        }
+
+        function showPlayerSettlement(settlements) {
+            const table = document.getElementById('poker-table');
+            const popup = document.createElement('div');
+            popup.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                border-radius: 16px;
+                padding: 30px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                z-index: 2000;
+                min-width: 300px;
+                text-align: center;
+            `;
+
+            let html = '<h2 style="margin-bottom:20px;">Game Results</h2>';
+            settlements.forEach(s => {
+                const color = s.net >= 0 ? '#ffd700' : '#ff4444';
+                const emoji = s.net >= 0 ? '😂' : '😭';
+                html += `<div style="font-size:1.2em; margin:10px 0; color:${color}; font-weight:bold;">${emoji} ${s.name}: ${s.net >= 0 ? '+' : ''}₹${s.net}</div>`;
+            });
+            html += '<button onclick="this.parentElement.remove()" style="margin-top:20px; padding:10px 20px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer;">Close</button>';
+            popup.innerHTML = html;
+            table.appendChild(popup);
+
+            // Emoji rain for all players
+            emojiRain(settlements);
+        }
+
+        function emojiRain(settlements) {
+            const winnerEmojis = ['😂', '🎉', '🤑', '💰', '🏆', '⭐', '🎊', '🥳'];
+            const loserEmojis = ['😭', '😢', '💔', '😞', '😿', '🌧️', '💸', '😰'];
+            
+            settlements.forEach(s => {
+                const emojis = s.net >= 0 ? winnerEmojis : loserEmojis;
+                const count = s.net >= 0 ? 30 : 20;
+                
+                for (let i = 0; i < count; i++) {
+                    setTimeout(() => {
+                        const emoji = document.createElement('div');
+                        emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                        emoji.style.cssText = `
+                            position: fixed;
+                            font-size: ${20 + Math.random() * 20}px;
+                            left: ${Math.random() * 100}%;
+                            top: -50px;
+                            z-index: 3000;
+                            animation: fall ${3 + Math.random() * 2}s linear;
+                            pointer-events: none;
+                        `;
+                        
+                        // Add falling animation
+                        const style = document.createElement('style');
+                        style.textContent = `
+                            @keyframes fall {
+                                to {
+                                    transform: translateY(${window.innerHeight + 100}px) rotate(${Math.random() * 360}deg);
+                                }
+                            }
+                        `;
+                        if (!document.querySelector('style[data-emoji-rain]')) {
+                            style.setAttribute('data-emoji-rain', 'true');
+                            document.head.appendChild(style);
+                        }
+                        
+                        document.body.appendChild(emoji);
+                        
+                        // Remove after animation
+                        setTimeout(() => emoji.remove(), 5000);
+                    }, i * 100);
+                }
+            });
+        }
+
+        function handleQuickSend(amount) {
+            if (!selectedTargetId) return showError('Select a player first!');
+            
+            const player = players.find(p => p.socketId === selectedTargetId);
+            socket.emit('adjustWallet', { 
+                playerSocketId: selectedTargetId,
+                playerName: player ? player.name : null,
+                amount: amount 
+            });
+        }
+
+        function handleResetRoom() {
+            if (!confirm('Are you sure? This will reset all admin-given amounts and set everyone\'s wallet to 0.')) return;
+            
+            socket.emit('resetRoom');
+        }
+
+        function handleWinnerClick(socketId) {
+            if (selectedWinnerId === socketId) {
+                // Second click - Declare Winner
+                if (pot <= 0) return showError('The pool is empty!');
+
+                const box = document.querySelector(`.winner-box[data-socket-id="${socketId}"]`);
+                if (box) {
+                    box.classList.remove('selected');
+                    box.classList.add('winner');
+                    
+                    // Show golden for 2 seconds then emit
+                    setTimeout(() => {
+                        const player = players.find(p => p.socketId === socketId);
+                        socket.emit('selectWinner', { 
+                            winnerSocketId: socketId,
+                            winnerName: player ? player.name : null
+                        });
+                        selectedWinnerId = null;
+                        updateModeratorControls();
+                    }, 2000);
+                }
+            } else {
+                // First click - Select (Red)
+                selectedWinnerId = socketId;
+                updateModeratorControls();
+            }
+        }
+
+        function handleQuickBet(amount) {
+            if (isNaN(amount) || amount <= 0) return showError('Enter a valid amount');
+            
+            // Local check before sending
+            const me = players.find(p => p.socketId === myId);
+            if (me && amount > me.wallet) {
+                return showError(`Insufficient funds! You only have ₹${me.wallet}. The Moderator must send you money first.`);
+            }
+
+            socket.emit('addMoney', { amount });
+        }
+
+        function animateCoin(fromSocketId, amount) {
+            const slot = document.getElementById(`player-slot-${fromSocketId}`);
+            const poolBox = document.getElementById('central-pool-box');
+            if (!slot || !poolBox) return;
+
+            const coin = document.createElement('div');
+            coin.className = 'coin';
+            coin.textContent = '₹' + amount;
+            
+            const start = slot.getBoundingClientRect();
+            const end = poolBox.getBoundingClientRect();
+            
+            coin.style.left = start.left + (start.width / 2) - 15 + 'px';
+            coin.style.top = start.top + (start.height / 2) - 15 + 'px';
+            document.body.appendChild(coin);
+
+            setTimeout(() => {
+                const targetX = end.left + (end.width / 2) - start.left - (start.width / 2);
+                const targetY = end.top + (end.height / 2) - start.top - (start.height / 2);
+                coin.style.transform = `translate(${targetX}px, ${targetY}px) scale(0.5)`;
+                coin.style.opacity = '0';
+            }, 50);
+
+            setTimeout(() => coin.remove(), 1000);
+        }
+
+        function showError(msg) {
+            const err = document.getElementById('errorMessage');
+            err.textContent = msg;
+            err.style.display = 'block';
+            setTimeout(() => err.style.display = 'none', 5000);
+        }
+
+        function showNotification(msg) {
+            const note = document.getElementById('notificationMessage');
+            note.textContent = msg;
+            note.style.display = 'block';
+            setTimeout(() => note.style.display = 'none', 5000);
+        }
+    </script>
+</body>
+</html>
