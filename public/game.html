@@ -59,7 +59,7 @@
                         </div>
                     </div>
 
-                    <div class="card" id="player-bets-card" style="display: block;">
+                    <div class="card" id="player-bets-card" style="display: none;">
                         <div class="mod-controls">
                             <hr>
                             <h3>Quick Bets</h3>
@@ -289,12 +289,14 @@
         function updateModeratorControls() {
             const modControls = document.getElementById('moderator-controls');
             const adminCard = document.getElementById('admin-controls-card');
+            const playerBetsCard = document.getElementById('player-bets-card');
             const winnerGrid = document.getElementById('winner-selection-grid');
             const sendMoneyGrid = document.getElementById('send-money-selection-grid');
             
             if (isModerator) {
                 modControls.classList.add('active');
                 adminCard.style.display = 'block';
+                playerBetsCard.style.display = 'none';
                 
                 // Update grids
                 winnerGrid.innerHTML = '';
@@ -329,6 +331,7 @@
             } else {
                 modControls.classList.remove('active');
                 adminCard.style.display = 'none';
+                playerBetsCard.style.display = 'block';
             }
         }
 
