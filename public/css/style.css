@@ -837,42 +837,77 @@ h2 {
     gap: 10px;
 }
 
-.btn-quick-bet {
-    padding: 12px;
-    border: 2px solid #667eea;
-    background: white;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    color: #667eea;
-    transition: all 0.2s;
-}
-
-.btn-quick-bet:hover {
-    background: #667eea;
-    color: white;
-}
-
 /* Responsive adjustments */
 @media (max-width: 600px) {
+    .game-view {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        padding: 10px;
+        gap: 10px;
+    }
+
     .table-container {
-        height: 520px;
-        max-width: 360px;
-        border-width: 10px;
-        border-radius: 46% / 50%;
+        height: 50vh;
+        max-width: 90vw;
+        border-width: 8px;
+        border-radius: 50%;
+        margin: 0 auto;
     }
 
     .pool-box {
-        min-width: 150px;
-        padding: 16px 24px;
+        min-width: 120px;
+        padding: 12px 20px;
     }
 
     .pool-value {
-        font-size: 2.1em;
+        font-size: 1.8em;
     }
 
     .player-info-row {
-        font-size: 0.8em;
+        font-size: 0.7em;
+    }
+
+    .interaction-panel {
+        height: 40vh;
+        overflow: hidden;
+    }
+
+    .admin-controls-container {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        margin-left: 0 !important;
+        gap: 10px !important;
+        height: 100%;
+    }
+
+    .card {
+        padding: 10px !important;
+        margin: 0;
+    }
+
+    #player-bets-card {
+        flex: 1;
+        display: flex !important;
+        flex-direction: column;
+    }
+
+    #player-bets-card h3 {
+        font-size: 16px !important;
+        margin: 0 0 10px 0 !important;
+    }
+
+    #player-bets-card > div {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 5px !important;
+        flex: 1;
+    }
+
+    #player-bets-card button {
+        padding: 8px !important;
+        font-size: 12px !important;
     }
 }
 
