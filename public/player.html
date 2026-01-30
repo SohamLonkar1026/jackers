@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player - LAN Game Manager</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Player Login Form -->
+        <div id="playerLogin" class="card">
+            <h1>👤 Join Game</h1>
+            <input type="text" id="playerNameInput" placeholder="Enter your name" maxlength="20">
+            <button onclick="joinAsPlayer()" class="btn-primary">Join Game</button>
+        </div>
+
+        <!-- Player Dashboard -->
+        <div id="playerDashboard" class="player-dashboard" style="display: none;">
+            <div class="player-header">
+                <h1 id="playerNameDisplay">Player</h1>
+                <div class="wallet-display">
+                    <span class="wallet-label">Wallet:</span>
+                    <span id="walletAmount" class="wallet-amount">1000</span>
+                    <span class="wallet-unit">coins</span>
+                </div>
+            </div>
+
+            <!-- Game Status -->
+            <div class="card">
+                <h2>Game Status</h2>
+                <div id="gameStatus" class="game-status">
+                    <div class="status-item">
+                        <span class="status-label">Game Type:</span>
+                        <span id="gameTypeDisplay" class="status-value">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Round Status:</span>
+                        <span id="roundStatusDisplay" class="status-value">Waiting</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Your Bet:</span>
+                        <span id="currentBet" class="status-value">0</span> coins
+                    </div>
+                </div>
+            </div>
+
+            <!-- Betting Section -->
+            <div class="card">
+                <h2>Place Bet</h2>
+                <div class="bet-input-section">
+                    <input type="number" id="betAmount" placeholder="Enter bet amount" min="1" step="1">
+                    <button onclick="placeBet()" class="btn-primary" id="betButton">Place Bet</button>
+                </div>
+                <div class="quick-bet-buttons">
+                    <button onclick="setBetAmount(50)" class="btn-quick-bet">50</button>
+                    <button onclick="setBetAmount(100)" class="btn-quick-bet">100</button>
+                    <button onclick="setBetAmount(250)" class="btn-quick-bet">250</button>
+                    <button onclick="setBetAmount(500)" class="btn-quick-bet">500</button>
+                </div>
+            </div>
+
+            <!-- Connection Status -->
+            <div class="card">
+                <div id="connectionStatus" class="connection-status">
+                    <span class="status-indicator connected"></span>
+                    <span>Connected</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Display -->
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+        <!-- Kicked Message -->
+        <div id="kickedMessage" class="card error-message" style="display: none;">
+            <h2>You have been kicked</h2>
+            <p>Please refresh the page to rejoin.</p>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/socket.js"></script>
+    <script src="js/player.js"></script>
+</body>
+</html>
+

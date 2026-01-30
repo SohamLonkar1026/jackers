@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dealer Dashboard - LAN Game Manager</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="dealer-header">
+            <h1>👑 Dealer Dashboard</h1>
+            <div id="dealerName" class="dealer-name">Loading...</div>
+        </div>
+
+        <!-- Dealer Login Form -->
+        <div id="dealerLogin" class="card">
+            <h2>Enter Your Name</h2>
+            <input type="text" id="dealerNameInput" placeholder="Enter dealer name (e.g., Soham)" maxlength="20">
+            <button onclick="joinAsDealer()" class="btn-primary">Start as Dealer</button>
+        </div>
+
+        <!-- Dealer Dashboard -->
+        <div id="dealerDashboard" class="dealer-dashboard" style="display: none;">
+            <!-- Game Type Selection -->
+            <div class="card">
+                <h2>Game Type</h2>
+                <div class="game-type-selector">
+                    <button id="btnBlackjack" class="btn-game-type" onclick="setGameType('blackjack')">Blackjack</button>
+                    <button id="btnTeenPatti" class="btn-game-type" onclick="setGameType('teen-patti')">Teen Patti</button>
+                </div>
+                <div id="currentGameType" class="current-game-type">No game selected</div>
+            </div>
+
+            <!-- Connected Players -->
+            <div class="card">
+                <h2>Connected Players <span id="playerCount" class="badge">0</span></h2>
+                <div id="playersList" class="players-list">
+                    <p class="empty-state">No players connected yet</p>
+                </div>
+            </div>
+
+            <!-- Current Round Info -->
+            <div class="card">
+                <h2>Current Round</h2>
+                <div id="roundInfo" class="round-info">
+                    <div class="round-stat">
+                        <span class="stat-label">Status:</span>
+                        <span id="roundStatus" class="stat-value">Waiting</span>
+                    </div>
+                    <div class="round-stat">
+                        <span class="stat-label">Total Pot:</span>
+                        <span id="totalPot" class="stat-value">0</span> coins
+                    </div>
+                    <div class="round-stat">
+                        <span class="stat-label">Active Bets:</span>
+                        <span id="activeBets" class="stat-value">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Controls -->
+            <div class="card">
+                <h2>Game Controls</h2>
+                <div class="controls-grid">
+                    <button onclick="startRound()" class="btn-control btn-success">Start Round</button>
+                    <button onclick="endRound()" class="btn-control btn-warning">End Round</button>
+                    <button onclick="resetRound()" class="btn-control btn-secondary">Reset Round</button>
+                    <button onclick="resetGame()" class="btn-control btn-danger">Reset Full Game</button>
+                </div>
+            </div>
+
+            <!-- Winner Selection -->
+            <div class="card">
+                <h2>Select Winner</h2>
+                <div id="winnerSelection" class="winner-selection">
+                    <p class="empty-state">No players with active bets</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Display -->
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/socket.js"></script>
+    <script src="js/dealer.js"></script>
+</body>
+</html>
+
