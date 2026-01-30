@@ -345,22 +345,35 @@
             const adminCard = document.getElementById('admin-controls-card');
             const playerControlsCard = document.getElementById('player-controls-card');
             const playerBetsCard = document.getElementById('player-bets-card');
-            const winnerGrid = document.getElementById('winner-selection-grid');
-            const sendMoneyGrid = document.getElementById('send-money-selection-grid');
 
-            console.log('updateModeratorControls called - isModerator:', isModerator);
+    slot.innerHTML = `
+        <div class="player-bid-container">
+            <div class="player-last-bid total-bid active" id="total-${player.socketId}">
+                Total Bid: ₹${player.totalBid || 0}
+            </div>
+            <div class="player-last-bid latest-bid active" id="bid-${player.socketId}">
+                Latest Bid: ₹${player.lastBid || 0}
+            </div>
+        </div>
+        <div class="player-icon">${player.isModerator ? '👑' : '👤'}</div>
+        <div class="player-info-row">
+            <span class="player-wallet-label">₹${player.wallet}</span>
+            <span class="player-name-label">${player.name}${player.isModerator ? ' (Admin)' : ''}</span>
+        </div>
+    `;
 
-            if (isModerator) {
-                modControls.classList.add('active');
-                adminCard.style.display = 'block';
-                playerControlsCard.style.display = 'block';
-                playerBetsCard.style.display = 'none';
-                playerBetsCard.classList.remove('player-view');
+    return slot;
+}
 
-                // Update grids
-                winnerGrid.innerHTML = '';
-                sendMoneyGrid.innerHTML = '';
+function updateModeratorControls() {
+    const modControls = document.getElementById('moderator-controls');
+    const adminCard = document.getElementById('admin-controls-card');
+    const playerControlsCard = document.getElementById('player-controls-card');
+    const playerBetsCard = document.getElementById('player-bets-card');
+    const winnerGrid = document.getElementById('winner-selection-grid');
+    const sendMoneyGrid = document.getElementById('send-money-selection-grid');
 
+    console.log('updateModeratorControls called - isModerator:', isModerator);
                 players.forEach(player => {
                     // Don't show admin in selection lists
                     if (player.isModerator) return;
