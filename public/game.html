@@ -403,9 +403,9 @@ function updateModeratorControls() {
                 });
             } else {
                 modControls.classList.remove('active');
-                adminCard.style.display = 'none';
-                playerControlsCard.style.display = 'none';
-                playerBetsCard.style.display = 'block';
+                adminCard.classList.add('hidden');
+                playerControlsCard.classList.add('hidden');
+                playerBetsCard.classList.remove('hidden');
                 playerBetsCard.classList.add('player-view');
             }
         }

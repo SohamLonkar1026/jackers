@@ -529,6 +529,16 @@ h2 {
     margin: 20px auto;
 }
 
+/* Player bets card - show for players on desktop */
+#player-bets-card {
+    display: flex;
+    flex-direction: column;
+}
+
+#player-bets-card.hidden {
+    display: none;
+}
+
 .bet-input-section {
     display: flex;
     gap: 10px;
