@@ -921,6 +921,28 @@ h2 {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
         margin-top: 10px !important;
     }
+
+    /* Hide player betting buttons and stats for admin on mobile */
+    .admin-controls-container:has(.mod-controls.active) ~ #player-bets-card,
+    .admin-controls-container:has(.mod-controls.active) ~ #player-bets-card > div:first-child,
+    .admin-controls-container:has(.mod-controls.active) ~ #player-bets-card #player-stats {
+        display: none !important;
+    }
+
+    /* Fallback for browsers that don't support :has */
+    .mod-controls.active ~ #player-bets-card {
+        display: none !important;
+    }
+
+    /* Additional targeting - when admin controls are visible, hide player bets */
+    #admin-controls-card[style*="block"] ~ #player-controls-card ~ #player-bets-card {
+        display: none !important;
+    }
+
+    /* When moderator controls are active, hide player betting card */
+    .mod-controls.active ~ #player-bets-card {
+        display: none !important;
+    }
 }
 
 .status-indicator {
