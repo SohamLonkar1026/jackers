@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Money Manager</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="join-container card">
+            <h1>💰 Money Manager</h1>
+            <p class="subtitle">Join the table to manage your bets</p>
+            
+        <div class="join-form">
+            <div class="role-selection-tabs">
+                <button id="player-tab" class="tab-btn active" onclick="setRole('player')">Player</button>
+                <button id="admin-tab" class="tab-btn" onclick="setRole('admin')">Admin</button>
+            </div>
+
+            <input type="text" id="player-name" placeholder="Enter Name">
+            
+            <div class="room-details">
+                <input type="text" id="room-id" placeholder="Room ID (e.g. 1234)">
+                <input type="text" id="room-password" placeholder="Room Password">
+            </div>
+
+            <div class="form-group" id="admin-password-group" style="display: none;">
+                <label for="admin-password">Admin Password:</label>
+                <input type="password" id="admin-password" placeholder="Set your admin password">
+            </div>
+            
+            <button id="join-btn" class="btn-join" onclick="joinGame()">Join Table</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedRole = 'player';
+
+        function setRole(role) {
+            selectedRole = role;
+            document.getElementById('player-tab').classList.toggle('active', role === 'player');
+            document.getElementById('admin-tab').classList.toggle('active', role === 'admin');
+            document.getElementById('admin-password-group').style.display = role === 'admin' ? 'block' : 'none';
+            document.getElementById('join-btn').textContent = role === 'admin' ? 'Login as Admin' : 'Join Table';
+        }
+
+        function joinGame() {
+            const name = document.getElementById('player-name').value.trim();
+            const roomId = document.getElementById('room-id').value.trim();
+            const roomPassword = document.getElementById('room-password').value.trim();
+            const adminPassword = document.getElementById('admin-password').value;
+            
+            if (!name) {
+                alert('Please enter your name');
+                return;
+            }
+            if (!roomId) {
+                alert('Please enter a Room ID');
+                return;
+            }
+            if (!roomPassword) {
+                alert('Please enter a Room Password');
+                return;
+            }
+
+            if (selectedRole === 'admin' && !adminPassword) {
+                alert('Please set an admin password');
+                return;
+            }
+
+            sessionStorage.setItem('playerName', name);
+            sessionStorage.setItem('roomId', roomId);
+            sessionStorage.setItem('roomPassword', roomPassword);
+            sessionStorage.setItem('isAdmin', selectedRole === 'admin');
+            sessionStorage.setItem('adminPassword', adminPassword);
+            // Default wallet set to 0
+            sessionStorage.setItem('initialWallet', '0');
+            
+            window.location.href = 'game.html';
+        }
+
+        // Allow Enter key to submit
+        document.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                joinGame();
+            }
+        });
+    </script>
+</body>
+</html>

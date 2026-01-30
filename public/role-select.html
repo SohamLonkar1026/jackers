@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAN Game Manager - Select Role</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>Select Your Role</h1>
+            
+            <div class="role-selection">
+                <button class="role-btn dealer-btn" onclick="selectRole('dealer')">
+                    <span class="role-icon">👑</span>
+                    <span class="role-name">I am the Dealer</span>
+                    <span class="role-desc">Manage game, players, and wallets</span>
+                </button>
+                
+                <button class="role-btn player-btn" onclick="selectRole('player')">
+                    <span class="role-icon">👤</span>
+                    <span class="role-name">I am a Player</span>
+                    <span class="role-desc">Join game and place bets</span>
+                </button>
+            </div>
+
+            <a href="index.html" class="back-link">← Back to Game Selection</a>
+        </div>
+    </div>
+
+    <script>
+        function selectRole(role) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const gameType = urlParams.get('game') || sessionStorage.getItem('gameType');
+            
+            if (role === 'dealer') {
+                window.location.href = `dealer.html?game=${gameType}`;
+            } else {
+                window.location.href = `player.html?game=${gameType}`;
+            }
+        }
+    </script>
+</body>
+</html>
+
