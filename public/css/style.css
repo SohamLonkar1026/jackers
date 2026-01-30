@@ -535,6 +535,9 @@ h2 {
     flex-direction: column;
 }
 
+#player-bets-card.hidden {
+    display: none;
+}
 .bet-input-section {
     display: flex;
     gap: 10px;
@@ -880,8 +883,8 @@ h2 {
     }
 
     .admin-controls-container {
-        display: flex !important;
-        flex-direction: column !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
         width: 100% !important;
         margin-left: 0 !important;
         gap: 10px !important;
@@ -895,12 +898,16 @@ h2 {
 
     #player-bets-card {
         flex: 1;
-        display: flex !important;
+        display: none !important;
         flex-direction: column;
         width: 95% !important;
         max-width: 500px !important;
     }
 
+    /* Show player bets card only for non-moderator players */
+    #player-bets-card.player-view {
+        display: flex !important;
+    }
     #player-bets-card h3 {
         font-size: 16px !important;
         margin: 0 0 10px 0 !important;
