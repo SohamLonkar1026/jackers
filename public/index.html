@@ -3,13 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Join Money Manager</title>
+    <title>Join JACKERS</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
 <body>
     <div class="container">
         <div class="join-container card">
-            <h1>💰 Money Manager</h1>
+            <h1 class="app-title">
+                <strong>JACKERS</strong>
+                <div id="vapour-byline-wrapper" class="vapour-byline-wrapper" aria-label="by Soham Lonkar"></div>
+            </h1>
             <p class="subtitle">Join the table to manage your bets</p>
             
         <div class="join-form">
@@ -86,6 +91,30 @@
                 joinGame();
             }
         });
+    </script>
+    <script src="js/vapour-text.js"></script>
+    <script>
+        (function initVapour() {
+            var wrapper = document.getElementById('vapour-byline-wrapper');
+            if (!wrapper || typeof initVapourTitle !== 'function') return;
+            function run() {
+                initVapourTitle({
+                    wrapper: wrapper,
+                    text: 'BY SOHAM LONKAR',
+                    fontFamily: "'Outfit', sans-serif",
+                    fontSize: 18,
+                    color: 'rgb(212, 175, 55)',
+                    vaporizeDuration: 2,
+                    fadeInDuration: 1,
+                    waitDuration: 0.5
+                });
+            }
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(run);
+            } else {
+                setTimeout(run, 150);
+            }
+        })();
     </script>
 </body>
 </html>

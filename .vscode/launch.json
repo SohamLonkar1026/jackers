@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Start server",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/server.js",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Start server (from parent folder)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/jackers-master/server.js",
+      "cwd": "${workspaceFolder}/jackers-master",
+      "console": "integratedTerminal"
+    }
+  ]
+}
