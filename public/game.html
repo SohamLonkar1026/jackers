@@ -89,8 +89,8 @@
                                     <div id="stat-total-games" style="font-size: 20px; font-weight: bold; color: #667eea;">0</div>
                                 </div>
                                 <div>
-                                    <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Games Won</div>
-                                    <div id="stat-wins" style="font-size: 20px; font-weight: bold; color: #28a745;">0</div>
+                                    <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Net Coins</div>
+                                    <div id="stat-wins" style="font-size: 20px; font-weight: bold; color: #28a745;">₹0</div>
                                 </div>
                                 <div>
                                     <div style="font-size: 12px; color: #666; margin-bottom: 4px;">From Admin</div>
@@ -723,7 +723,19 @@
                 totalGamesEl.textContent = window.totalGames || 0;
             }
             if (winsEl) {
-                winsEl.textContent = player.wins || 0;
+                // Calculate net coins: current wallet - admin given amount
+                const currentWallet = player.wallet || 0;
+                const adminGiven = player.adminGiven || 0;
+                const netCoins = currentWallet - adminGiven;
+                
+                // Set color based on positive/negative
+                if (netCoins < 0) {
+                    winsEl.style.color = '#ff4444'; // Red for negative
+                    winsEl.textContent = `-₹${Math.abs(netCoins)}`;
+                } else {
+                    winsEl.style.color = '#28a745'; // Green for positive
+                    winsEl.textContent = `+₹${netCoins}`;
+                }
             }
             if (adminGivenEl) {
                 adminGivenEl.textContent = `₹${player.adminGiven || 0}`;
@@ -732,5 +744,4 @@
     </script>
 </body>
 
-</html>
 </html>

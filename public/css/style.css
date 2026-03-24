@@ -217,16 +217,20 @@ h2 {
     position: relative;
     width: 100%;
     max-width: 800px;
-    height: 600px;
+    aspect-ratio: 1 / 1;
+    max-height: 80vh;
     margin: 40px auto 100px;
     background: radial-gradient(circle, #2d5a27 0%, #1e3c1a 100%);
     border: 15px solid #5d4037;
     border-radius: 50%;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    box-shadow: 0 40px 60px rgba(0,0,0,0.6), inset 0 -20px 40px rgba(0,0,0,0.5);
     overflow: visible;
     display: flex;
     justify-content: center;
     align-items: center;
+    /* 3D Transform Properties */
+    transform-style: preserve-3d;
+    transform: perspective(1200px) rotateX(25deg);
 }
 
 /* Player Slots around table */
@@ -241,6 +245,9 @@ h2 {
     text-align: center;
     transition: all 0.5s ease;
     z-index: 10;
+    /* Counter-rotate players to stand up on tilted table */
+    transform-style: preserve-3d;
+    transform: rotateX(-25deg) translateZ(40px);
 }
 
 /* Central Pool Box */
@@ -248,7 +255,6 @@ h2 {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
     background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
     border: 4px solid #ffd700;
     padding: 20px 40px;
@@ -256,13 +262,16 @@ h2 {
     text-align: center;
     color: white;
     box-shadow: 
-        0 0 30px rgba(255, 215, 0, 0.4),
+        0 15px 30px rgba(0,0,0,0.6),
         inset 0 0 15px rgba(255, 215, 0, 0.2);
     z-index: 5;
     min-width: 180px;
     border-image: linear-gradient(to bottom, #ffd700, #b8860b) 1;
     border: 4px solid;
     animation: pool-glow 2s infinite alternate;
+    /* Counter-rotate pool box to stand upright */
+    transform-style: preserve-3d;
+    transform: translate(-50%, -50%) rotateX(-25deg) translateZ(30px);
 }
 
 @keyframes pool-glow {
@@ -891,11 +900,12 @@ h2 {
     }
 
     .table-container {
-        height: 50vh;
-        max-width: 90vw;
+        max-height: 45vh;
+        max-width: 95vw;
         border-width: 8px;
         border-radius: 50%;
-        margin: 0 auto;
+        margin: 10px auto;
+        transform: perspective(800px) rotateX(20deg);
     }
 
     .pool-box {

@@ -4,6 +4,10 @@ const { Server } = require('socket.io');
 const path = require('path');
 
 const app = express();
+
+app.get('/health', (req, res) => {
+  res.send('OK');
+});
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
