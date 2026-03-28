@@ -542,10 +542,9 @@
         }
 
         function showPlayerSettlement(settlements) {
-            const table = document.getElementById('poker-table');
             const popup = document.createElement('div');
             popup.style.cssText = `
-                position: absolute;
+                position: fixed;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
@@ -553,7 +552,7 @@
                 border-radius: 16px;
                 padding: 30px;
                 box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-                z-index: 2000;
+                z-index: 9999;
                 min-width: 300px;
                 text-align: center;
             `;
@@ -566,7 +565,7 @@
             });
             html += '<button onclick="this.parentElement.remove()" style="margin-top:20px; padding:10px 20px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer;">Close</button>';
             popup.innerHTML = html;
-            table.appendChild(popup);
+            document.body.appendChild(popup);
 
             // Emoji rain for all players
             emojiRain(settlements);

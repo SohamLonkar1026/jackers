@@ -8,7 +8,7 @@
 
 body {
     font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #000;
     min-height: 100vh;
     padding: 20px;
     color: #333;
@@ -17,6 +17,8 @@ body {
 .container {
     max-width: 1200px;
     margin: 0 auto;
+    position: relative;
+    z-index: 10;
 }
 
 /* Role Selection Tabs */
@@ -24,7 +26,7 @@ body {
     display: flex;
     gap: 0;
     margin-bottom: 20px;
-    background: #f0f0f0;
+    background: rgba(255,255,255,0.12);
     padding: 5px;
     border-radius: 8px;
 }
@@ -36,24 +38,28 @@ body {
     background: transparent;
     cursor: pointer;
     font-weight: bold;
-    color: #666;
+    color: rgba(255,255,255,0.7);
     border-radius: 6px;
     transition: all 0.2s;
 }
 
 .tab-btn.active {
-    background: white;
-    color: #667eea;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    background: rgba(255,255,255,0.25);
+    color: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 /* Card Styles */
 .card {
-    background: white;
+    background: rgba(255, 255, 255, 0.10);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 16px;
     padding: 30px;
     margin-bottom: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    color: #fff;
 }
 
 h1 {
@@ -61,7 +67,7 @@ h1 {
     font-size: 2.5em;
     margin-bottom: 10px;
     text-align: center;
-    color: #333;
+    color: #fff;
     letter-spacing: 0.02em;
 }
 
@@ -115,7 +121,7 @@ h2 {
 .subtitle {
     text-align: center;
     font-size: 1.2em;
-    color: #666;
+    color: rgba(255,255,255,0.7);
     margin-bottom: 30px;
 }
 
@@ -1099,3 +1105,276 @@ h2 {
     }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   LOGIN PAGE  –  full-screen particle bg + floating compact card
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Lock the login page to one screen, no scroll */
+body.login-page {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100vh;
+    background: #000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 18px;
+}
+
+/* Canvas fills the entire viewport behind everything */
+body.login-page #particle-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    display: block;
+}
+
+/* Compact card – wide, short, pinned to top */
+.login-card {
+    position: relative;
+    z-index: 10;
+    width: min(860px, 94vw);
+    background: rgba(10, 10, 18, 0.78);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 16px;
+    padding: 14px 28px 16px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.55);
+    color: #fff;
+}
+
+/* Title + form in one row */
+.login-card-inner {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+/* Left: branding block */
+.login-brand {
+    flex-shrink: 0;
+    text-align: center;
+    min-width: 150px;
+}
+
+/* Right: form block */
+.login-form-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* Vertical divider between brand and form */
+.login-divider {
+    width: 1px;
+    align-self: stretch;
+    background: rgba(255, 255, 255, 0.12);
+    flex-shrink: 0;
+    margin: 0 4px;
+}
+
+/* Title area */
+.login-card .app-title {
+    font-family: 'Righteous', sans-serif;
+    font-size: 1.9em;
+    letter-spacing: 0.12em;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 2px;
+    margin-top: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+}
+
+        .login-card .vapour-byline-wrapper {
+    min-height: 18px;
+    height: 18px;
+}
+
+.login-card .subtitle {
+    text-align: center;
+    font-size: 0.78em;
+    color: rgba(255, 255, 255, 0.50);
+    margin-bottom: 0;
+    margin-top: 2px;
+}
+
+/* Tabs */
+.login-card .role-selection-tabs {
+    display: flex;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 3px;
+    margin-bottom: 8px;
+}
+
+.login-card .tab-btn {
+    flex: 1;
+    padding: 6px;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.55);
+    font-weight: 600;
+    font-size: 0.82em;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Outfit', sans-serif;
+}
+
+.login-card .tab-btn.active {
+    background: rgba(102, 126, 234, 0.55);
+    color: #fff;
+}
+
+/* Inputs */
+.login-card input[type="text"],
+.login-card input[type="password"] {
+    width: 100%;
+    padding: 7px 11px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-size: 0.86em;
+    font-family: 'Outfit', sans-serif;
+    outline: none;
+    box-sizing: border-box;
+    transition: border 0.2s, background 0.2s;
+}
+
+.login-card input::placeholder {
+    color: rgba(255, 255, 255, 0.38);
+}
+
+.login-card input:focus {
+    border-color: rgba(102, 126, 234, 0.7);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* Room details row */
+.login-card .room-details {
+    display: flex;
+    gap: 8px;
+}
+
+.login-card .room-details input {
+    flex: 1;
+}
+
+/* Admin password label */
+.login-card label {
+    display: block;
+    font-size: 0.8em;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 4px;
+}
+
+/* Join button */
+.login-card .btn-join {
+    width: 100%;
+    padding: 9px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95em;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.login-card .btn-join:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5);
+}
+
+.particle-bg-canvas {
+    display: block;
+    width: 100%;
+    height: calc(100vh - 360px);
+    min-height: 260px;
+    border-radius: 16px;
+    margin-top: 16px;
+    background: #000;
+}
+
+/* ── Join card glass form overrides ──────────────────────────────────────── */
+.join-container {
+    max-width: 480px;
+    margin: 40px auto;
+}
+
+.join-container input[type="text"],
+.join-container input[type="password"] {
+    width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    font-size: 1em;
+    font-family: 'Outfit', sans-serif;
+    outline: none;
+    transition: border 0.2s, background 0.2s;
+    box-sizing: border-box;
+}
+
+.join-container input::placeholder {
+    color: rgba(255,255,255,0.45);
+}
+
+.join-container input:focus {
+    border-color: rgba(255,255,255,0.55);
+    background: rgba(255,255,255,0.18);
+}
+
+.room-details {
+    display: flex;
+    gap: 10px;
+}
+
+.room-details input {
+    flex: 1;
+}
+
+.btn-join, .join-container button[id="join-btn"] {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1em;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: transform 0.15s, box-shadow 0.15s;
+    margin-top: 6px;
+}
+
+.btn-join:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(102,126,234,0.5);
+}
+
+.form-group label {
+    color: rgba(255,255,255,0.75);
+    font-size: 0.9em;
+    font-weight: 500;
+    margin-bottom: 4px;
+    display: block;
+}

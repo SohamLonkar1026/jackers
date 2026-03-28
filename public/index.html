@@ -4,38 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Join JACKERS</title>
+    <meta name="description" content="JACKERS – Join the table to manage your bets in Blackjack and Teen Patti.">
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
-<body>
-    <div class="container">
-        <div class="join-container card">
-            <h1 class="app-title">
-                <strong>JACKERS</strong>
-                <div id="vapour-byline-wrapper" class="vapour-byline-wrapper" aria-label="by Soham Lonkar"></div>
-            </h1>
-            <p class="subtitle">Join the table to manage your bets</p>
-            
-        <div class="join-form">
-            <div class="role-selection-tabs">
-                <button id="player-tab" class="tab-btn active" onclick="setRole('player')">Player</button>
-                <button id="admin-tab" class="tab-btn" onclick="setRole('admin')">Admin</button>
+<body class="login-page">
+    <!-- Full-page particle background -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Wide, short join card pinned to the top -->
+    <div class="login-card">
+        <div class="login-card-inner">
+
+            <!-- LEFT: Branding -->
+            <div class="login-brand">
+                <h1 class="app-title">
+                    <strong>JACKERS</strong>
+                    <div id="vapour-byline-wrapper" class="vapour-byline-wrapper" aria-label="by Soham Lonkar"></div>
+                </h1>
+                <p class="subtitle">Join the table to manage your bets</p>
             </div>
 
-            <input type="text" id="player-name" placeholder="Enter Name">
-            
-            <div class="room-details">
-                <input type="text" id="room-id" placeholder="Room ID (e.g. 1234)">
-                <input type="text" id="room-password" placeholder="Room Password">
+            <!-- Divider -->
+            <div class="login-divider"></div>
+
+            <!-- RIGHT: Form -->
+            <div class="login-form-area">
+                <div class="role-selection-tabs">
+                    <button id="player-tab" class="tab-btn active" onclick="setRole('player')">Player</button>
+                    <button id="admin-tab" class="tab-btn" onclick="setRole('admin')">Admin</button>
+                </div>
+
+                <input type="text" id="player-name" placeholder="Enter Name">
+
+                <div class="room-details">
+                    <input type="text" id="room-id" placeholder="Room ID (e.g. 1234)">
+                    <input type="text" id="room-password" placeholder="Room Password">
+                </div>
+
+                <div id="admin-password-group" style="display:none;">
+                    <label for="admin-password">Admin Password:</label>
+                    <input type="password" id="admin-password" placeholder="Set your admin password">
+                </div>
+
+                <button id="join-btn" class="btn-join" onclick="joinGame()">Join Table</button>
             </div>
 
-            <div class="form-group" id="admin-password-group" style="display: none;">
-                <label for="admin-password">Admin Password:</label>
-                <input type="password" id="admin-password" placeholder="Set your admin password">
-            </div>
-            
-            <button id="join-btn" class="btn-join" onclick="joinGame()">Join Table</button>
         </div>
     </div>
 
@@ -55,44 +70,30 @@
             const roomId = document.getElementById('room-id').value.trim();
             const roomPassword = document.getElementById('room-password').value.trim();
             const adminPassword = document.getElementById('admin-password').value;
-            
-            if (!name) {
-                alert('Please enter your name');
-                return;
-            }
-            if (!roomId) {
-                alert('Please enter a Room ID');
-                return;
-            }
-            if (!roomPassword) {
-                alert('Please enter a Room Password');
-                return;
-            }
 
-            if (selectedRole === 'admin' && !adminPassword) {
-                alert('Please set an admin password');
-                return;
-            }
+            if (!name) { alert('Please enter your name'); return; }
+            if (!roomId) { alert('Please enter a Room ID'); return; }
+            if (!roomPassword) { alert('Please enter a Room Password'); return; }
+            if (selectedRole === 'admin' && !adminPassword) { alert('Please set an admin password'); return; }
 
             sessionStorage.setItem('playerName', name);
             sessionStorage.setItem('roomId', roomId);
             sessionStorage.setItem('roomPassword', roomPassword);
             sessionStorage.setItem('isAdmin', selectedRole === 'admin');
             sessionStorage.setItem('adminPassword', adminPassword);
-            // Default wallet set to 0
             sessionStorage.setItem('initialWallet', '0');
-            
+
             window.location.href = 'game.html';
         }
 
-        // Allow Enter key to submit
         document.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                joinGame();
-            }
+            if (e.key === 'Enter') { joinGame(); }
         });
     </script>
+
+    <script src="js/particle-text-effect.js"></script>
     <script src="js/vapour-text.js"></script>
+
     <script>
         (function initVapour() {
             var wrapper = document.getElementById('vapour-byline-wrapper');
@@ -102,7 +103,7 @@
                     wrapper: wrapper,
                     text: 'BY SOHAM LONKAR',
                     fontFamily: "'Outfit', sans-serif",
-                    fontSize: 18,
+                    fontSize: 14,
                     color: 'rgb(212, 175, 55)',
                     vaporizeDuration: 2,
                     fadeInDuration: 1,
@@ -114,6 +115,15 @@
             } else {
                 setTimeout(run, 150);
             }
+        })();
+    </script>
+
+    <script>
+        (function initParticle() {
+            var canvas = document.getElementById('particle-canvas');
+            if (!canvas || typeof initParticleTextEffect !== 'function') return;
+            var words = ['POKER', 'TEEN PATTI', 'BLACKJACK', 'RUMMY'];
+            initParticleTextEffect(canvas, words);
         })();
     </script>
 </body>
