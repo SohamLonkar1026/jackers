@@ -9,7 +9,6 @@ let sb, channel;
 let _onState = null, _onError = null, _onJoined = null;
 let _onMoneyAdded = null, _onWinner = null, _onPoolReset = null, _onRoomReset = null, _onSettlement = null;
 
-// ===== ADMIN-SIDE STATE (only used if this client is the admin) =====
 let _isHost = false;
 let _roomPassword = '';
 let _adminPassword = '';
@@ -17,6 +16,7 @@ let _players = new Map(); // sessionId -> {sessionId, name, wallet, initialWalle
 let _pot = 0;
 let _totalGames = 0;
 let _stateInterval = null;
+let _currentRoomId = null;
 
 function initGameEngine() {
     sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -24,6 +24,7 @@ function initGameEngine() {
 }
 
 function connectToRoom(roomId) {
+    _currentRoomId = roomId;
     channel = sb.channel('room-' + roomId, { config: { broadcast: { self: true } } });
 
     channel.on('broadcast', { event: 'action' }, (msg) => {
@@ -82,12 +83,39 @@ function sendJoin(data) {
         _roomPassword = data.roomPassword || '';
         _adminPassword = data.adminPassword || '';
 
-        // Add self as player
-        const w = parseInt(data.initialWallet) || 0;
-        _players.set(SESSION_ID, {
-            sessionId: SESSION_ID, name: data.name, wallet: w, initialWallet: w,
-            isModerator: true, lastBid: 0, totalBid: 0, wins: 0, adminGiven: 0
-        });
+        // Try to load state from localStorage
+        const saved = localStorage.getItem('jackers_state_' + _currentRoomId);
+        let restored = false;
+        
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                _pot = parsed.pot || 0;
+                _totalGames = parsed.totalGames || 0;
+                
+                _players = new Map();
+                parsed.players.forEach(p => {
+                    // Update the admin's session ID since it changed on refresh
+                    if (p.isModerator) {
+                        p.sessionId = SESSION_ID;
+                    }
+                    _players.set(p.sessionId, p);
+                });
+                restored = true;
+                console.log("Restored game state from local storage");
+            } catch(e) {
+                console.error("Failed to restore state", e);
+            }
+        }
+        
+        if (!restored) {
+            // Add self as player (new game)
+            const w = parseInt(data.initialWallet) || 0;
+            _players.set(SESSION_ID, {
+                sessionId: SESSION_ID, name: data.name, wallet: w, initialWallet: w,
+                isModerator: true, lastBid: 0, totalBid: 0, wins: 0, adminGiven: 0
+            });
+        }
 
         // Start broadcasting state periodically (heartbeat)
         if (_stateInterval) clearInterval(_stateInterval);
@@ -132,6 +160,10 @@ function broadcastState() {
     const playersArr = Array.from(_players.values());
     const ledger = {};
     playersArr.forEach(p => { ledger[p.name] = p.adminGiven || 0; });
+
+    // Save to LocalStorage so admin can refresh without losing game state
+    const stateObj = { players: playersArr, pot: _pot, totalGames: _totalGames };
+    localStorage.setItem('jackers_state_' + _currentRoomId, JSON.stringify(stateObj));
 
     send({
         type: 'gameState',
