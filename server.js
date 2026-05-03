@@ -440,3 +440,5 @@ server.listen(PORT, () => {
   console.log('\nPlayers should connect to: http://<your-ip>:3000\n');
 });
 
+module.exports = app;
+

@@ -23,7 +23,7 @@
             <div class="interaction-panel">
                 <div class="admin-controls-container"
                     style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 200%; margin-left: -50%;">
-                    <div class="card" id="admin-controls-card" style="display: none;">
+                    <div class="card" id="admin-controls-card" style="display: block; opacity: 0.5; pointer-events: none;">
                         <div id="moderator-controls" class="mod-controls active">
                             <hr>
                             <h3>Admin Controls</h3>
@@ -53,7 +53,7 @@
                         </div>
                     </div>
 
-                    <div class="card" id="player-controls-card" style="display: none;">
+                    <div class="card" id="player-controls-card" style="display: block; opacity: 0.5; pointer-events: none;">
                         <div id="player-individual-controls" class="mod-controls active">
                             <hr>
                             <h3>Player Individual Controls</h3>
@@ -130,10 +130,10 @@
         // Initialize Socket
         try {
             socket = io({
-                transports: ['websocket', 'polling'],
-                reconnectionAttempts: 10,
+                transports: ['polling'],
+                reconnectionAttempts: 20,
                 reconnectionDelay: 1000,
-                timeout: 20000
+                timeout: 30000
             });
 
             socket.on('connect', () => {
@@ -143,7 +143,7 @@
 
             socket.on('connect_error', (error) => {
                 console.error('Connection Error:', error);
-                showError('Connection failed: ' + error.message);
+                showError('Searching for Table... (Trying to connect)');
             });
 
             socket.on('joined', (data) => {
@@ -161,6 +161,14 @@
             });
 
             socket.on('gameState', (state) => {
+                // Connection successful, enable controls
+                document.getElementById('admin-controls-card').style.opacity = '1';
+                document.getElementById('admin-controls-card').style.pointerEvents = 'auto';
+                document.getElementById('player-controls-card').style.opacity = '1';
+                document.getElementById('player-controls-card').style.pointerEvents = 'auto';
+                document.getElementById('player-bets-card').style.opacity = '1';
+                document.getElementById('player-bets-card').style.pointerEvents = 'auto';
+
                 console.log('State Update:', state);
                 console.log('Players in state:', state.players.map(p => p.name));
                 players = state.players;
