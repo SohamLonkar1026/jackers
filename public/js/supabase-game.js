@@ -1,8 +1,8 @@
 // supabase-game.js — Pure Broadcast relay, NO database
 // Admin browser = game server. Supabase = WebSocket relay only.
 
-const SUPABASE_URL = 'https://ygyzrcwzmenpgqbjfgin.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlneXpyY3d6bWVucGdxYmpmZ2luIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4MTgyMzAsImV4cCI6MjA5MzM5NDIzMH0.-ZcAXAOa5dS-ZbgIlGeI1pH52AznCiG2k4Izc68Cl-M';
+const SUPABASE_URL = 'https://bmcubrlxapdngznvxonh.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtY3Vicmx4YXBkbmd6bnZ4b25oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4Mzg3NDcsImV4cCI6MjA4NzQxNDc0N30.3xQqDKAf5UxyXxtN0zS9CAAoLbB3psMTYexwRDCHSpA';
 const SESSION_ID = 'sess_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
 
 let sb, channel;
