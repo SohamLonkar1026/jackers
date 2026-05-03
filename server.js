@@ -143,6 +143,8 @@ io.on('connection', (socket) => {
       // Reconnect existing player
       player.socketId = socket.id;
       player.online = true;
+      // Ensure role is updated based on current join request
+      player.isModerator = isModerator;
       room.playersBySocket.set(socket.id, playerName);
       console.log(`Reconnected player ${playerName} to room ${roomId}`);
     } else {
