@@ -135,7 +135,17 @@ function initParticleTextEffect(canvas, words) {
     const offCtx = offscreen.getContext('2d');
 
     offCtx.fillStyle = 'white';
-    offCtx.font = 'bold 100px Arial';
+    
+    // Determine dynamic font size based on screen width
+    let fontSize = 100;
+    offCtx.font = `bold ${fontSize}px Arial`;
+    let textMetrics = offCtx.measureText(word);
+    
+    if (textMetrics.width > canvas.width * 0.85) {
+      fontSize = Math.floor(fontSize * ((canvas.width * 0.85) / textMetrics.width));
+      offCtx.font = `bold ${fontSize}px Arial`;
+    }
+
     offCtx.textAlign = 'center';
     offCtx.textBaseline = 'middle';
     offCtx.fillText(word, canvas.width / 2, canvas.height / 2);
@@ -177,7 +187,7 @@ function initParticleTextEffect(canvas, words) {
           const rPos = _generateRandomPos(canvas.width / 2, canvas.height / 2, (canvas.width + canvas.height) / 2, canvas.width, canvas.height);
           particle.pos.x = rPos.x;
           particle.pos.y = rPos.y;
-          particle.maxSpeed = Math.random() * 6 + 4;
+          particle.maxSpeed = Math.random() * 8 + 6; // slightly faster
           particle.maxForce = particle.maxSpeed * 0.05;
           particle.particleSize = Math.random() * 6 + 6;
           particle.colorBlendRate = Math.random() * 0.0275 + 0.0025;
@@ -229,7 +239,8 @@ function initParticleTextEffect(canvas, words) {
     }
 
     frameCount++;
-    if (frameCount % 240 === 0) {
+    // Change word roughly every 7 seconds (was 240 frames = 4 seconds)
+    if (frameCount % 420 === 0) {
       wordIndex = (wordIndex + 1) % words.length;
       nextWord(words[wordIndex]);
     }
