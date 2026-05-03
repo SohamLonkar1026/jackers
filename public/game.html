@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JACKERS - Round Table</title>
     <link rel="stylesheet" href="css/style.css">
-    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-game.js"></script>
 </head>
 
 <body>
@@ -119,104 +120,57 @@
             // Optional: add to a debug overlay if we still have issues
         };
 
-        let socket;
         let myId = null;
         let isModerator = false;
         let players = [];
         let pot = 0;
-        let selectedWinnerId = null; // Track single click selection
-        let selectedTargetId = null; // Track selection for sending money
+        let selectedWinnerId = null;
+        let selectedTargetId = null;
 
         // ===== IMMEDIATE UI INITIALIZATION =====
-        // Read role from sessionStorage BEFORE socket connects
-        // This ensures the correct interface is shown instantly
         (function initializeUI() {
             const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-            isModerator = isAdmin; // Set the JS variable immediately
-
+            isModerator = isAdmin;
             const adminCard = document.getElementById('admin-controls-card');
             const playerControlsCard = document.getElementById('player-controls-card');
             const playerBetsCard = document.getElementById('player-bets-card');
             const adminContainer = document.querySelector('.admin-controls-container');
-
             if (isAdmin) {
-                // ADMIN: Show admin panels, hide player betting
                 adminCard.style.display = 'block';
                 playerControlsCard.style.display = 'block';
                 playerBetsCard.style.display = 'none';
                 if (adminContainer) adminContainer.style.display = 'grid';
             } else {
-                // PLAYER: Hide admin panels, show player betting
                 adminCard.style.display = 'none';
                 playerControlsCard.style.display = 'none';
                 playerBetsCard.style.display = 'block';
-                if (adminContainer) {
-                    adminContainer.style.display = 'block';
-                    adminContainer.style.width = '100%';
-                    adminContainer.style.marginLeft = '0';
-                }
+                if (adminContainer) { adminContainer.style.display = 'block'; adminContainer.style.width = '100%'; adminContainer.style.marginLeft = '0'; }
             }
-            console.log('UI initialized from sessionStorage - isAdmin:', isAdmin);
         })();
 
-        // Initialize Socket
+        // ===== SUPABASE GAME ENGINE =====
         try {
-            socket = io({
-                reconnectionAttempts: 5,
-                timeout: 10000
-            });
+            initGameEngine();
 
-            socket.on('connect', () => {
-                console.log('Connected! ID:', socket.id);
-                attemptJoin();
-            });
-
-            socket.on('connect_error', (error) => {
-                console.error('Connection Error:', error);
-                showError('Searching for Table... (Trying to connect)');
-            });
-
-            socket.on('joined', (data) => {
-                console.log('Successfully joined:', data);
-                myId = data.player.socketId;
-                isModerator = data.isModerator;
-                updateMyInfo(data.player);
-                // Initialize stats with player data
-                const playerWithStats = {
-                    ...data.player,
-                    wins: 0,
-                    adminGiven: 0
-                };
-                updatePlayerStats(playerWithStats);
-            });
-
-            socket.on('gameState', (state) => {
-
+            // Register game state handler
+            onGameState((state) => {
                 console.log('State Update:', state);
-                console.log('Players in state:', state.players.map(p => p.name));
                 players = state.players;
                 pot = state.pot;
                 window.currentLedger = state.ledger || {};
                 window.totalGames = state.totalGames || 0;
 
-                const me = players.find(p => p.socketId === (myId || socket.id));
+                const me = players.find(p => p.socketId === (myId || SESSION_ID));
                 if (me) {
                     myId = me.socketId;
                     isModerator = me.isModerator;
                     updateMyInfo(me);
-                    // Update player stats
                     updatePlayerStats(me);
                 }
 
-                // Clear selections if selected players are no longer in the game
-                if (selectedWinnerId && !players.find(p => p.socketId === selectedWinnerId)) {
-                    selectedWinnerId = null;
-                }
-                if (selectedTargetId && !players.find(p => p.socketId === selectedTargetId)) {
-                    selectedTargetId = null;
-                }
+                if (selectedWinnerId && !players.find(p => p.socketId === selectedWinnerId)) selectedWinnerId = null;
+                if (selectedTargetId && !players.find(p => p.socketId === selectedTargetId)) selectedTargetId = null;
 
-                console.log('Updating UI with players:', players.map(p => p.name));
                 updateTable();
                 updatePot();
                 updateModeratorControls();
@@ -224,43 +178,37 @@
                 updateIndividualPlayerSections();
             });
 
-            socket.on('moneyAdded', (data) => {
-                animateCoin(data.socketId, data.amount);
-            });
-
-            socket.on('winnerSelected', (data) => {
-                const winnerSlot = document.getElementById(`player-slot-${data.winnerSocketId}`);
-                if (winnerSlot) {
-                    winnerSlot.classList.add('winner-glow');
-                    setTimeout(() => winnerSlot.classList.remove('winner-glow'), 3000);
-                }
-            });
-
-            socket.on('poolReset', () => {
-                showNotification('The pool has been reset by the moderator.');
-            });
-
-            socket.on('roomReset', () => {
-                showNotification('The room has been fully reset. All wallets set to ₹0.');
-            });
-
-            socket.on('showSettlementToAll', (settlements) => {
-                showPlayerSettlement(settlements);
-            });
-
-
-            socket.on('error', (err) => {
-                console.error('Server Error:', err);
+            // Register error handler
+            onError((err) => {
+                console.error('Game Error:', err);
                 showError(err.message);
             });
 
+            // Register event handlers
+            window.onMoneyAdded = (data) => { animateCoin(data.sessionId, data.amount); };
+            window.onWinnerSelected = (data) => {
+                const winnerSlot = document.getElementById('player-slot-' + data.winnerSessionId);
+                if (winnerSlot) { winnerSlot.classList.add('winner-glow'); setTimeout(() => winnerSlot.classList.remove('winner-glow'), 3000); }
+            };
+            window.onPoolReset = () => { showNotification('The pool has been reset by the moderator.'); };
+            window.onRoomReset = () => { showNotification('The room has been fully reset. All wallets set to ₹0.'); };
+            window.onSettlement = (settlements) => { showPlayerSettlement(settlements); };
+            window.onJoinedRoom = (data) => {
+                console.log('Successfully joined:', data);
+                myId = data.player.session_id;
+                isModerator = data.isModerator;
+                showNotification('Connected to table!');
+            };
+
+            // Auto-join room
+            attemptJoin();
+
         } catch (e) {
-            console.error('Socket.io initialization failed:', e);
+            console.error('Game engine failed:', e);
             showError('Could not load game engine.');
         }
 
         function attemptJoin() {
-            isModerator = false; // Reset locally before join
             const name = sessionStorage.getItem('playerName');
             const initialWallet = sessionStorage.getItem('initialWallet');
             const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
@@ -269,13 +217,13 @@
             const adminPassword = sessionStorage.getItem('adminPassword');
 
             if (!name) {
-                console.log('No name found, going back to login');
                 window.location.href = 'index.html';
                 return;
             }
 
             console.log('Joining as:', name, 'Wallet:', initialWallet, 'isAdmin:', isAdmin, 'room:', roomId);
-            socket.emit('joinRoom', { name, initialWallet, isAdmin, roomId, roomPassword, adminPassword });
+            connectToRoom(roomId);
+            setTimeout(() => sendJoin({ name, initialWallet, isAdmin, roomId, roomPassword, adminPassword }), 1000);
         }
 
         function updateMyInfo(player) {
@@ -506,36 +454,9 @@
             });
         }
 
-        function handleQuickSendToPlayer(socketId, playerName, amount) {
-            socket.emit('adjustWallet', {
-                playerSocketId: socketId,
-                playerName: playerName,
-                amount: amount
-            });
-            showNotification(`Sent ₹${amount} to ${playerName}`);
-        }
-
         function handleTargetClick(socketId) {
             selectedTargetId = socketId;
             updateModeratorControls();
-        }
-
-        function handleQuickSend(amount) {
-            if (!selectedTargetId) {
-                showError('Please select a player first');
-                return;
-            }
-            const player = players.find(p => p.socketId === selectedTargetId);
-            if (!player) {
-                showError('Player not found');
-                return;
-            }
-            socket.emit('adjustWallet', {
-                playerSocketId: selectedTargetId,
-                playerName: player.name,
-                amount: amount
-            });
-            showNotification(`Sent ₹${amount} to ${player.name}`);
         }
 
 
@@ -553,7 +474,7 @@
                 });
 
             // Show settlement on all players' screens (including admin)
-            socket.emit('showSettlementToAll', settlements);
+            sendSettlement(settlements);
         }
 
         function confetti(playerName) {
@@ -667,19 +588,13 @@
 
         function handleQuickSend(amount) {
             if (!selectedTargetId) return showError('Select a player first!');
-
             const player = players.find(p => p.socketId === selectedTargetId);
-            socket.emit('adjustWallet', {
-                playerSocketId: selectedTargetId,
-                playerName: player ? player.name : null,
-                amount: amount
-            });
+            sendAdjustWallet(selectedTargetId, player ? player.name : null, amount);
         }
 
         function handleResetRoom() {
             if (!confirm('Are you sure? This will reset all admin-given amounts and set everyone\'s wallet to 0.')) return;
-
-            socket.emit('resetRoom');
+            sendResetRoom();
         }
 
         function handleWinnerClick(socketId) {
@@ -695,10 +610,7 @@
                     // Show golden for 2 seconds then emit
                     setTimeout(() => {
                         const player = players.find(p => p.socketId === socketId);
-                        socket.emit('selectWinner', {
-                            winnerSocketId: socketId,
-                            winnerName: player ? player.name : null
-                        });
+                        sendSelectWinner(socketId, player ? player.name : null);
                         selectedWinnerId = null;
                         updateModeratorControls();
                     }, 2000);
@@ -712,14 +624,11 @@
 
         function handleQuickBet(amount) {
             if (isNaN(amount) || amount <= 0) return showError('Enter a valid amount');
-
-            // Local check before sending
             const me = players.find(p => p.socketId === myId);
             if (me && amount > me.wallet) {
                 return showError(`Insufficient funds! You only have ₹${me.wallet}. The Moderator must send you money first.`);
             }
-
-            socket.emit('addMoney', { amount });
+            sendBet(amount);
         }
 
         function animateCoin(fromSocketId, amount) {
