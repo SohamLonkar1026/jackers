@@ -23,7 +23,7 @@
             <div class="interaction-panel">
                 <div class="admin-controls-container"
                     style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 200%; margin-left: -50%;">
-                    <div class="card" id="admin-controls-card" style="display: block; opacity: 0.5; pointer-events: none;">
+                    <div class="card" id="admin-controls-card" style="display: none;">
                         <div id="moderator-controls" class="mod-controls active">
                             <hr>
                             <h3>Admin Controls</h3>
@@ -53,7 +53,7 @@
                         </div>
                     </div>
 
-                    <div class="card" id="player-controls-card" style="display: block; opacity: 0.5; pointer-events: none;">
+                    <div class="card" id="player-controls-card" style="display: none;">
                         <div id="player-individual-controls" class="mod-controls active">
                             <hr>
                             <h3>Player Individual Controls</h3>
@@ -127,13 +127,43 @@
         let selectedWinnerId = null; // Track single click selection
         let selectedTargetId = null; // Track selection for sending money
 
+        // ===== IMMEDIATE UI INITIALIZATION =====
+        // Read role from sessionStorage BEFORE socket connects
+        // This ensures the correct interface is shown instantly
+        (function initializeUI() {
+            const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+            isModerator = isAdmin; // Set the JS variable immediately
+
+            const adminCard = document.getElementById('admin-controls-card');
+            const playerControlsCard = document.getElementById('player-controls-card');
+            const playerBetsCard = document.getElementById('player-bets-card');
+            const adminContainer = document.querySelector('.admin-controls-container');
+
+            if (isAdmin) {
+                // ADMIN: Show admin panels, hide player betting
+                adminCard.style.display = 'block';
+                playerControlsCard.style.display = 'block';
+                playerBetsCard.style.display = 'none';
+                if (adminContainer) adminContainer.style.display = 'grid';
+            } else {
+                // PLAYER: Hide admin panels, show player betting
+                adminCard.style.display = 'none';
+                playerControlsCard.style.display = 'none';
+                playerBetsCard.style.display = 'block';
+                if (adminContainer) {
+                    adminContainer.style.display = 'block';
+                    adminContainer.style.width = '100%';
+                    adminContainer.style.marginLeft = '0';
+                }
+            }
+            console.log('UI initialized from sessionStorage - isAdmin:', isAdmin);
+        })();
+
         // Initialize Socket
         try {
             socket = io({
-                transports: ['polling'],
-                reconnectionAttempts: 20,
-                reconnectionDelay: 1000,
-                timeout: 30000
+                reconnectionAttempts: 5,
+                timeout: 10000
             });
 
             socket.on('connect', () => {
@@ -161,13 +191,6 @@
             });
 
             socket.on('gameState', (state) => {
-                // Connection successful, enable controls
-                document.getElementById('admin-controls-card').style.opacity = '1';
-                document.getElementById('admin-controls-card').style.pointerEvents = 'auto';
-                document.getElementById('player-controls-card').style.opacity = '1';
-                document.getElementById('player-controls-card').style.pointerEvents = 'auto';
-                document.getElementById('player-bets-card').style.opacity = '1';
-                document.getElementById('player-bets-card').style.pointerEvents = 'auto';
 
                 console.log('State Update:', state);
                 console.log('Players in state:', state.players.map(p => p.name));
@@ -358,14 +381,22 @@
             const playerBetsCard = document.getElementById('player-bets-card');
             const winnerGrid = document.getElementById('winner-selection-grid');
             const sendMoneyGrid = document.getElementById('send-money-selection-grid');
+            const adminContainer = document.querySelector('.admin-controls-container');
 
             console.log('updateModeratorControls called - isModerator:', isModerator);
 
             if (isModerator) {
+                // ADMIN VIEW
                 modControls.classList.add('active');
                 adminCard.style.display = 'block';
                 playerControlsCard.style.display = 'block';
                 playerBetsCard.style.display = 'none';
+                if (adminContainer) {
+                    adminContainer.style.display = 'grid';
+                    adminContainer.style.gridTemplateColumns = '1fr 1fr';
+                    adminContainer.style.width = '200%';
+                    adminContainer.style.marginLeft = '-50%';
+                }
 
                 // Update grids
                 winnerGrid.innerHTML = '';
@@ -399,12 +430,19 @@
                     sendMoneyGrid.appendChild(sendBox);
                 });
             } else {
+                // PLAYER VIEW
                 modControls.classList.remove('active');
                 adminCard.style.display = 'none';
                 playerControlsCard.style.display = 'none';
                 playerBetsCard.style.display = 'block';
+                if (adminContainer) {
+                    adminContainer.style.display = 'block';
+                    adminContainer.style.width = '100%';
+                    adminContainer.style.marginLeft = '0';
+                }
             }
         }
+
 
         function updateLedgerTable() {
             const ledgerTableBody = document.querySelector('#admin-ledger-table tbody');

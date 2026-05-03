@@ -13,8 +13,7 @@ const io = new Server(server, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"]
-  },
-  transports: ['websocket', 'polling']
+  }
 });
 
 // Serve static files from public directory

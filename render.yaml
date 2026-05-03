@@ -1,7 +1,6 @@
 services:
-  # Web Service
   - type: web
-    name: blackjack-game-manager
+    name: jackers-solo
     env: node
     plan: free
     buildCommand: "npm install"
@@ -9,4 +8,4 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-    healthCheckPath: /debug
+    healthCheckPath: /health
