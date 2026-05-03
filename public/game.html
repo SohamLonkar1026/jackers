@@ -130,8 +130,10 @@
         // Initialize Socket
         try {
             socket = io({
-                reconnectionAttempts: 5,
-                timeout: 10000
+                transports: ['websocket', 'polling'],
+                reconnectionAttempts: 10,
+                reconnectionDelay: 1000,
+                timeout: 20000
             });
 
             socket.on('connect', () => {
@@ -227,6 +229,7 @@
         }
 
         function attemptJoin() {
+            isModerator = false; // Reset locally before join
             const name = sessionStorage.getItem('playerName');
             const initialWallet = sessionStorage.getItem('initialWallet');
             const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
