@@ -6,8 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JACKERS - Round Table</title>
     <link rel="stylesheet" href="css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase-game.js"></script>
+    <script src="js/relay-game.js"></script>
 </head>
 
 <body>
@@ -223,7 +222,11 @@
 
             console.log('Joining as:', name, 'Wallet:', initialWallet, 'isAdmin:', isAdmin, 'room:', roomId);
             connectToRoom(roomId);
-            setTimeout(() => sendJoin({ name, initialWallet, isAdmin, roomId, roomPassword, adminPassword }), 1000);
+            sendJoin({ name, initialWallet, isAdmin, roomId, roomPassword, adminPassword });
+        }
+
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
 
         function updateMyInfo(player) {
@@ -287,7 +290,7 @@
                     <div class="player-icon">${player.isModerator ? '👑' : '👤'}</div>
                     <div class="player-info-row">
                         <span class="player-wallet-label">₹${player.wallet}</span>
-                        <span class="player-name-label">${player.name}${player.isModerator ? ' (Admin)' : ''}</span>
+                        <span class="player-name-label">${esc(player.name)}${player.isModerator ? ' (Admin)' : ''}</span>
                     </div>
                 `;
 
@@ -406,7 +409,7 @@
                 const adminGiven = ledger[player.name] || 0;
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${player.name}</td>
+                    <td>${esc(player.name)}</td>
                     <td style="color: ${adminGiven > 0 ? '#4caf50' : '#666'}; font-weight: bold;">₹${adminGiven}</td>
                 `;
                 ledgerTableBody.appendChild(row);
@@ -442,7 +445,7 @@
 
                 playerSection.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h4 style="margin: 0; color: #667eea;">👤 ${player.name}</h4>
+                        <h4 style="margin: 0; color: #667eea;">👤 ${esc(player.name)}</h4>
                         <span style="font-size: 1.1em;">
                             <span style="color: #666;">Admin Given:</span>
                             <strong style="color: #4caf50; margin-left: 8px;">₹${adminGiven}</strong>
@@ -531,7 +534,7 @@
             settlements.forEach(s => {
                 const color = s.net >= 0 ? '#ffd700' : '#ff4444';
                 const emoji = s.net >= 0 ? '😂' : '😭';
-                html += `<div style="font-size:1.2em; margin:10px 0; color:${color}; font-weight:bold;">${emoji} ${s.name}: ${s.net >= 0 ? '+' : ''}₹${s.net}</div>`;
+                html += `<div style="font-size:1.2em; margin:10px 0; color:${color}; font-weight:bold;">${emoji} ${esc(s.name)}: ${s.net >= 0 ? '+' : ''}₹${s.net}</div>`;
             });
             html += '<button onclick="this.parentElement.remove()" style="margin-top:20px; padding:10px 20px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer;">Close</button>';
             popup.innerHTML = html;
