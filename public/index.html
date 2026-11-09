@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
     <title>Join JACKERS</title>
     <meta name="description" content="JACKERS – Join the table to manage your bets in Blackjack and Teen Patti.">
     <link rel="stylesheet" href="css/style.css">
@@ -10,59 +11,105 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
 <body class="login-page">
-    <!-- Full-page particle background -->
-    <canvas id="particle-canvas"></canvas>
+    <!-- Particle words: full-screen backdrop on desktop, hero strip on phones -->
+    <canvas id="particle-canvas" aria-hidden="true"></canvas>
 
-    <!-- Wide, short join card pinned to the top -->
-    <div class="login-card">
-        <div class="login-card-inner">
+    <main class="login-shell">
+        <div class="hero-spacer" aria-hidden="true"></div>
 
-            <!-- LEFT: Branding -->
-            <div class="login-brand">
-                <h1 class="app-title">
-                    <strong>JACKERS</strong>
-                    <div id="vapour-byline-wrapper" class="vapour-byline-wrapper" aria-label="by Soham Lonkar"></div>
-                </h1>
-                <p class="subtitle">Join the table to manage your bets</p>
+        <div class="login-card">
+            <div class="login-card-inner">
+
+                <!-- Branding -->
+                <div class="login-brand">
+                    <div class="suit-row" aria-hidden="true">
+                        <span class="suit suit-black">♠</span><span class="suit suit-red">♥</span><span class="suit suit-red">♦</span><span class="suit suit-black">♣</span>
+                    </div>
+                    <h1 class="app-title">
+                        <strong>JACKERS</strong>
+                        <div id="vapour-byline-wrapper" class="vapour-byline-wrapper" aria-label="by Soham Lonkar"></div>
+                    </h1>
+                    <p class="subtitle">Your live chip table: bets, pool and payouts in sync on every phone.</p>
+                </div>
+
+                <div class="login-divider"></div>
+
+                <!-- Form -->
+                <form class="login-form-area" id="join-form" novalidate onsubmit="joinGame(); return false;">
+                    <div class="role-selection-tabs" role="tablist" aria-label="Join as">
+                        <button type="button" id="player-tab" class="tab-btn active" role="tab" aria-selected="true" onclick="setRole('player')"><span class="tab-ico">🎲</span>Player</button>
+                        <button type="button" id="admin-tab" class="tab-btn" role="tab" aria-selected="false" onclick="setRole('admin')"><span class="tab-ico">👑</span>Admin</button>
+                    </div>
+
+                    <label class="field-label" for="player-name">Your name</label>
+                    <input type="text" id="player-name" placeholder="Enter Name" maxlength="30"
+                        autocomplete="nickname" autocapitalize="words" enterkeyhint="next">
+
+                    <div class="room-details">
+                        <div class="field">
+                            <label class="field-label" for="room-id">Room ID</label>
+                            <input type="text" id="room-id" placeholder="Room ID" maxlength="64"
+                                autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="next">
+                        </div>
+                        <div class="field">
+                            <label class="field-label" for="room-password">Room password</label>
+                            <input type="text" id="room-password" placeholder="Room Password"
+                                autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
+                        </div>
+                    </div>
+
+                    <div id="admin-password-group" style="display:none;">
+                        <label class="field-label" for="admin-password">Admin password</label>
+                        <input type="password" id="admin-password" placeholder="Set your admin password"
+                            autocomplete="new-password" enterkeyhint="go">
+                    </div>
+
+                    <p id="join-error" class="join-error" role="alert" aria-live="polite"></p>
+
+                    <button type="submit" id="join-btn" class="btn-join">Join Table</button>
+
+                    <ul class="feature-pills" aria-label="Highlights">
+                        <li>⚡ Live sync</li>
+                        <li>🏆 Auto payouts</li>
+                        <li>🔒 Private</li>
+                    </ul>
+                </form>
+
             </div>
-
-            <!-- Divider -->
-            <div class="login-divider"></div>
-
-            <!-- RIGHT: Form -->
-            <div class="login-form-area">
-                <div class="role-selection-tabs">
-                    <button id="player-tab" class="tab-btn active" onclick="setRole('player')">Player</button>
-                    <button id="admin-tab" class="tab-btn" onclick="setRole('admin')">Admin</button>
-                </div>
-
-                <input type="text" id="player-name" placeholder="Enter Name">
-
-                <div class="room-details">
-                    <input type="text" id="room-id" placeholder="Room ID (e.g. 1234)">
-                    <input type="text" id="room-password" placeholder="Room Password">
-                </div>
-
-                <div id="admin-password-group" style="display:none;">
-                    <label for="admin-password">Admin Password:</label>
-                    <input type="password" id="admin-password" placeholder="Set your admin password">
-                </div>
-
-                <button id="join-btn" class="btn-join" onclick="joinGame()">Join Table</button>
-            </div>
-
         </div>
-    </div>
+    </main>
 
     <script>
         let selectedRole = 'player';
 
         function setRole(role) {
             selectedRole = role;
-            document.getElementById('player-tab').classList.toggle('active', role === 'player');
-            document.getElementById('admin-tab').classList.toggle('active', role === 'admin');
-            document.getElementById('admin-password-group').style.display = role === 'admin' ? 'block' : 'none';
-            document.getElementById('join-btn').textContent = role === 'admin' ? 'Login as Admin' : 'Join Table';
+            const isAdmin = role === 'admin';
+            const pTab = document.getElementById('player-tab');
+            const aTab = document.getElementById('admin-tab');
+            pTab.classList.toggle('active', !isAdmin);
+            aTab.classList.toggle('active', isAdmin);
+            pTab.setAttribute('aria-selected', String(!isAdmin));
+            aTab.setAttribute('aria-selected', String(isAdmin));
+            document.getElementById('admin-password-group').style.display = isAdmin ? 'block' : 'none';
+            document.getElementById('join-btn').textContent = isAdmin ? 'Open Table as Admin' : 'Join Table';
+            clearError();
+        }
+
+        function showFieldError(id, msg) {
+            const err = document.getElementById('join-error');
+            err.textContent = msg;
+            err.classList.add('visible');
+            document.querySelectorAll('.login-card input').forEach(i => i.classList.remove('invalid'));
+            const el = document.getElementById(id);
+            if (el) { el.classList.add('invalid'); el.focus(); }
+        }
+
+        function clearError() {
+            const err = document.getElementById('join-error');
+            err.textContent = '';
+            err.classList.remove('visible');
+            document.querySelectorAll('.login-card input').forEach(i => i.classList.remove('invalid'));
         }
 
         function joinGame() {
@@ -71,10 +118,12 @@
             const roomPassword = document.getElementById('room-password').value.trim();
             const adminPassword = document.getElementById('admin-password').value;
 
-            if (!name) { alert('Please enter your name'); return; }
-            if (!roomId) { alert('Please enter a Room ID'); return; }
-            if (!roomPassword) { alert('Please enter a Room Password'); return; }
-            if (selectedRole === 'admin' && !adminPassword) { alert('Please set an admin password'); return; }
+            if (!name) return showFieldError('player-name', 'Enter your name.');
+            if (!roomId) return showFieldError('room-id', 'Enter a Room ID.');
+            if (!roomPassword) return showFieldError('room-password', 'Enter the room password.');
+            if (selectedRole === 'admin' && !adminPassword) return showFieldError('admin-password', 'Set an admin password.');
+
+            try { localStorage.setItem('jackers_last', JSON.stringify({ name, roomId })); } catch (e) { }
 
             sessionStorage.setItem('playerName', name);
             sessionStorage.setItem('roomId', roomId);
@@ -83,12 +132,26 @@
             sessionStorage.setItem('adminPassword', adminPassword);
             sessionStorage.setItem('initialWallet', '0');
 
+            const btn = document.getElementById('join-btn');
+            btn.disabled = true;
+            btn.textContent = 'Joining…';
             window.location.href = 'game.html';
         }
 
-        document.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') { joinGame(); }
-        });
+        // Prefill name + room from the last visit
+        (function prefill() {
+            try {
+                const last = JSON.parse(localStorage.getItem('jackers_last') || 'null');
+                if (last) {
+                    if (last.name) document.getElementById('player-name').value = last.name;
+                    if (last.roomId) document.getElementById('room-id').value = last.roomId;
+                }
+            } catch (e) { }
+        })();
+
+        document.querySelectorAll('.login-card input').forEach(i => i.addEventListener('input', () => {
+            if (i.classList.contains('invalid')) clearError();
+        }));
     </script>
 
     <script src="js/particle-text-effect.js"></script>

@@ -120,13 +120,23 @@ function initParticleTextEffect(canvas, words) {
   let animId = null;
   const mouse = { x: 0, y: 0, isPressed: false, isRightClick: false };
 
-  // Size canvas to viewport (fixed fullscreen bg)
+  // Size canvas to its CSS box (full screen on desktop, hero strip on phones)
   function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    const r = canvas.getBoundingClientRect();
+    canvas.width = Math.max(1, Math.round(r.width || window.innerWidth));
+    canvas.height = Math.max(1, Math.round(r.height || window.innerHeight));
   }
   resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
+  let _resizeTimer = null;
+  window.addEventListener('resize', () => {
+    const w = canvas.width, h = canvas.height;
+    resizeCanvas();
+    // Re-target the current word only when the box really changed (mobile URL bar fires resize)
+    if (Math.abs(canvas.width - w) > 40 || Math.abs(canvas.height - h) > 80) {
+      clearTimeout(_resizeTimer);
+      _resizeTimer = setTimeout(() => nextWord(words[wordIndex]), 120);
+    }
+  });
 
   function nextWord(word) {
     const offscreen = document.createElement('canvas');
@@ -137,7 +147,7 @@ function initParticleTextEffect(canvas, words) {
     offCtx.fillStyle = 'white';
     
     // Determine dynamic font size based on screen width
-    let fontSize = 100;
+    let fontSize = Math.min(100, Math.floor(canvas.height * 0.32));
     offCtx.font = `bold ${fontSize}px Arial`;
     let textMetrics = offCtx.measureText(word);
     
@@ -189,7 +199,7 @@ function initParticleTextEffect(canvas, words) {
           particle.pos.y = rPos.y;
           particle.maxSpeed = Math.random() * 8 + 6; // slightly faster
           particle.maxForce = particle.maxSpeed * 0.05;
-          particle.particleSize = Math.random() * 6 + 6;
+          particle.particleSize = canvas.width < 600 ? Math.random() * 3 + 4 : Math.random() * 6 + 6;
           particle.colorBlendRate = Math.random() * 0.0275 + 0.0025;
           particles.push(particle);
         }
