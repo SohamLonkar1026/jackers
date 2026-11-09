@@ -1561,3 +1561,350 @@ body.login-page #particle-canvas {
     }
     .mod-section .quick-bet-buttons button { min-height: 44px; padding: 10px 4px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ADMIN – three columns (Controls · Player Controls · Winning Payouts)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.admin-controls-container.admin-wide {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    align-items: start;
+    width: min(1500px, calc(100vw - 40px)) !important;
+    margin-left: 0 !important;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Medium screens: controls side by side, payouts full width underneath */
+@media (min-width: 601px) and (max-width: 1100px) {
+    .admin-controls-container.admin-wide {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+    .admin-controls-container.admin-wide #payouts-card { grid-column: 1 / -1; }
+}
+
+.payouts-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+.payout-chip {
+    background: rgba(255, 215, 0, 0.12);
+    border: 1px solid rgba(255, 215, 0, 0.45);
+    color: #ffd700;
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 0.85em;
+}
+.payout-chip b { color: #fff; margin-left: 2px; }
+
+.payouts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 460px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+.payout-row {
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    padding: 10px 14px;
+    background: rgba(102, 126, 234, 0.05);
+}
+.payout-row:first-child { border-color: #ffd700; box-shadow: 0 0 12px rgba(255, 215, 0, 0.25); }
+.payout-main {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.payout-game {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.85em;
+    font-weight: 600;
+    min-width: 28px;
+}
+.payout-winner {
+    color: #8fa2ff;
+    font-weight: 700;
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: break-word;
+}
+.payout-amount {
+    color: #4caf50;
+    font-weight: 800;
+    font-size: 1.15em;
+    white-space: nowrap;
+}
+.payout-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    margin-top: 4px;
+    padding-left: 38px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8em;
+}
+.payouts-empty {
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+    padding: 12px 0;
+}
+
+@media (max-width: 600px) {
+    .admin-controls-container.admin-wide {
+        left: 0;
+        transform: none;
+        width: 100% !important;
+    }
+    .payouts-list { max-height: none; }
+    .payout-row { padding: 8px 10px; }
+    .payout-meta { padding-left: 0; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BUTTON SYSTEM – admin panel + player bets (dark, consistent, 44px targets)
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+    --ui-surface: #1f2233;
+    --ui-surface-hover: #272b40;
+    --ui-line: rgba(255, 255, 255, 0.12);
+    --ui-text: #f2f3f7;
+    --ui-muted: rgba(255, 255, 255, 0.55);
+    --ui-accent: #6c7cf0;
+    --ui-accent-strong: #5465e6;
+    --ui-gold-1: #ffe08a;
+    --ui-gold-2: #f2b705;
+    --ui-gold-3: #b8860b;
+    --ui-green-1: #34c26b;
+    --ui-green-2: #1f9d55;
+    --ui-red: #ff5d5d;
+}
+
+/* Sections inside admin cards: dark glass instead of white boxes */
+#admin-controls-card .mod-section {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--ui-line);
+    border-left: 3px solid var(--ui-accent);
+    border-radius: 12px;
+    padding: 14px;
+}
+#admin-controls-card .mod-section label {
+    color: var(--ui-text);
+    font-size: 0.95em;
+    font-weight: 700;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.label-hint {
+    color: var(--ui-muted);
+    font-weight: 500;
+    font-size: 0.82em;
+}
+
+/* Generic buttons */
+.ui-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 18px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    font: inherit;
+    font-weight: 700;
+    font-size: 0.95em;
+    letter-spacing: 0.2px;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.ui-btn:active { transform: translateY(1px) scale(0.98); }
+.ui-btn:focus-visible, .coin-btn:focus-visible, .bet-btn:focus-visible, .winner-box:focus-visible {
+    outline: 2px solid var(--ui-gold-1);
+    outline-offset: 2px;
+}
+.ui-btn-icon { font-size: 1.05em; line-height: 1; }
+
+.ui-btn-success {
+    background: linear-gradient(180deg, var(--ui-green-1), var(--ui-green-2));
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(31, 157, 85, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+.ui-btn-success:hover { box-shadow: 0 6px 18px rgba(31, 157, 85, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
+
+.ui-btn-danger-outline {
+    background: rgba(255, 93, 93, 0.08);
+    color: var(--ui-red);
+    border-color: rgba(255, 93, 93, 0.55);
+}
+.ui-btn-danger-outline:hover { background: rgba(255, 93, 93, 0.16); border-color: var(--ui-red); }
+
+.ui-btn-primary {
+    background: linear-gradient(180deg, var(--ui-accent), var(--ui-accent-strong));
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(84, 101, 230, 0.35);
+}
+
+.action-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+/* Player picker chips (winner + send money) */
+#admin-controls-card .winner-selection-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 8px;
+}
+#admin-controls-card .winner-box {
+    background: var(--ui-surface);
+    color: var(--ui-text);
+    border: 1px solid var(--ui-line);
+    border-radius: 10px;
+    min-height: 46px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95em;
+    font-weight: 700;
+    word-break: normal;
+    overflow-wrap: break-word;
+    line-height: 1.15;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+#admin-controls-card .winner-box:hover {
+    background: var(--ui-surface-hover);
+    border-color: var(--ui-accent);
+    transform: translateY(-1px);
+}
+
+/* Send-money pick: solid indigo with a check */
+#send-money-selection-grid .winner-box.selected {
+    background: linear-gradient(180deg, var(--ui-accent), var(--ui-accent-strong)) !important;
+    border-color: #aab4ff !important;
+    color: #fff !important;
+    animation: none;
+    box-shadow: 0 0 0 3px rgba(108, 124, 240, 0.3), 0 4px 14px rgba(84, 101, 230, 0.4);
+}
+#send-money-selection-grid .winner-box.selected::before { content: "\2713"; margin-right: 6px; }
+
+/* Winner pick: amber "tap again to confirm" state, gold when confirmed */
+#winner-selection-grid .winner-box.selected {
+    flex-direction: column;
+    background: rgba(242, 183, 5, 0.14) !important;
+    border-color: var(--ui-gold-2) !important;
+    color: var(--ui-gold-1) !important;
+    animation: pulse-gold 1.1s infinite;
+}
+#winner-selection-grid .winner-box.selected::after {
+    content: "tap to confirm";
+    display: block;
+    font-size: 0.7em;
+    font-weight: 600;
+    opacity: 0.85;
+}
+#winner-selection-grid .winner-box.winner {
+    background: linear-gradient(180deg, var(--ui-gold-1), var(--ui-gold-2)) !important;
+    color: #3a2a00 !important;
+    border-color: var(--ui-gold-3) !important;
+    transform: scale(1.04);
+    box-shadow: 0 0 22px rgba(255, 215, 0, 0.6);
+}
+@keyframes pulse-gold {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(242, 183, 5, 0.35); }
+    50% { box-shadow: 0 0 0 5px rgba(242, 183, 5, 0.12); }
+}
+
+/* Gold coin amount buttons */
+.amount-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+    transition: opacity 0.15s ease;
+}
+.amount-row.no-target { opacity: 0.45; }
+.amount-row.no-target .coin-btn { box-shadow: none; }
+.coin-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 46px;
+    border-radius: 10px;
+    border: 1px solid var(--ui-gold-3);
+    background: linear-gradient(180deg, var(--ui-gold-1) 0%, var(--ui-gold-2) 100%);
+    color: #3a2a00;
+    font: inherit;
+    font-weight: 800;
+    font-size: 1em;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(242, 183, 5, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    transition: transform 0.12s ease, box-shadow 0.15s ease, filter 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.coin-btn:hover { filter: brightness(1.05); box-shadow: 0 6px 16px rgba(242, 183, 5, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.55); }
+.coin-btn:active { transform: translateY(1px) scale(0.97); }
+.coin-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fff6cc 0 25%, #f2b705 26% 70%, #b8860b 71%);
+    box-shadow: 0 0 0 1px rgba(120, 80, 0, 0.5);
+    flex: none;
+}
+.amount-row.shake { animation: shake-x 0.35s ease; }
+@keyframes shake-x {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+}
+
+/* Player bet buttons (bottom of player screen) */
+#player-bets-card .bet-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+}
+#player-bets-card .bet-btn {
+    min-height: 52px;
+    padding: 0 6px !important;
+    border-radius: 12px;
+    border: 1px solid rgba(170, 180, 255, 0.45);
+    background: linear-gradient(180deg, rgba(108, 124, 240, 0.95), rgba(84, 101, 230, 0.95));
+    color: #fff;
+    font: inherit;
+    font-weight: 800 !important;
+    font-size: 17px !important;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: transform 0.1s ease, filter 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+#player-bets-card .bet-btn:hover { filter: brightness(1.08); }
+#player-bets-card .bet-btn:active { transform: translateY(1px) scale(0.96); filter: brightness(0.95); }
+
+@media (max-width: 600px) {
+    .ui-btn { padding: 0 10px; font-size: 0.9em; }
+    #admin-controls-card .winner-selection-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    #admin-controls-card .winner-box { min-height: 44px; font-size: 0.88em; padding: 6px; }
+    .coin-btn { font-size: 0.92em; gap: 5px; }
+    #player-bets-card .bet-btn { min-height: 50px; font-size: 16px !important; }
+}
+
+/* Phone: admin cards full width; keep a gap between name and amount */
+@media (max-width: 600px) {
+    .admin-controls-container.admin-wide { align-items: stretch; }
+}
+#individual-player-sections .mod-section > div { gap: 10px; flex-wrap: wrap; }

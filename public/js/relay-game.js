@@ -31,6 +31,8 @@ let _roomPassword = '';
 let _players = new Map(); // sessionId -> {sessionId, name, wallet, initialWallet, isModerator, lastBid, totalBid, wins, adminGiven}
 let _pot = 0;
 let _totalGames = 0;
+let _payouts = [];         // winning-pool payouts, newest first: {game, winner, amount, at, from:[{name, amount}]}
+const MAX_PAYOUTS = 50;
 let _stateInterval = null;
 
 function initGameEngine() {
@@ -170,6 +172,7 @@ function becomeHost(data) {
             const parsed = JSON.parse(saved);
             _pot = parsed.pot || 0;
             _totalGames = parsed.totalGames || 0;
+            _payouts = Array.isArray(parsed.payouts) ? parsed.payouts.slice(0, MAX_PAYOUTS) : [];
             _players = new Map();
             (parsed.players || []).forEach((p) => {
                 if (p.isModerator) p.sessionId = SESSION_ID;
@@ -230,7 +233,7 @@ function broadcastState() {
 
     try {
         localStorage.setItem('jackers_state_' + _currentRoomId,
-            JSON.stringify({ players: playersArr, pot: _pot, totalGames: _totalGames }));
+            JSON.stringify({ players: playersArr, pot: _pot, totalGames: _totalGames, payouts: _payouts }));
     } catch (e) { }
 
     send({
@@ -243,7 +246,7 @@ function broadcastState() {
             })),
             pot: _pot,
             moderatorId: playersArr.find((p) => p.isModerator)?.sessionId || null,
-            ledger, totalGames: _totalGames
+            ledger, totalGames: _totalGames, payouts: _payouts
         }
     });
 }
@@ -300,10 +303,18 @@ function hostHandleWinner(d) {
     if (!winner) return;
 
     const wonAmount = _pot;
+    // Who put money into this pool (captured before the round's bids are cleared)
+    const from = Array.from(_players.values())
+        .filter((p) => (p.totalBid || 0) > 0)
+        .map((p) => ({ name: p.name, amount: p.totalBid }))
+        .sort((a, b) => b.amount - a.amount);
+
     winner.wallet += wonAmount;
     winner.wins = (winner.wins || 0) + 1;
     _pot = 0;
     _totalGames++;
+    _payouts.unshift({ game: _totalGames, winner: winner.name, amount: wonAmount, at: Date.now(), from });
+    if (_payouts.length > MAX_PAYOUTS) _payouts.length = MAX_PAYOUTS;
     _players.forEach((p) => { p.lastBid = 0; p.totalBid = 0; });
 
     send({ type: 'winner', winnerSessionId: winner.sessionId, winnerName: winner.name, amount: wonAmount });
@@ -324,6 +335,7 @@ function hostHandleAdjust(d) {
 
 function hostHandleReset() {
     _pot = 0;
+    _payouts = [];
     _players.forEach((p) => {
         p.wallet = 0; p.initialWallet = 0; p.lastBid = 0;
         p.totalBid = 0; p.adminGiven = 0;
