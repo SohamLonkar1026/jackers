@@ -17,6 +17,7 @@
                 <div id="central-pool-box" class="pool-box">
                     <div class="pool-label">TOTAL POOL</div>
                     <div id="pot-amount-center" class="pool-value">₹0</div>
+                    <div class="pool-legend"><span class="dot dot-total"></span>Total <span class="dot dot-last"></span>Last</div>
                 </div>
             </div>
 
@@ -225,6 +226,12 @@
             sendJoin({ name, initialWallet, isAdmin, roomId, roomPassword, adminPassword });
         }
 
+        let _relayoutTimer = null;
+        window.addEventListener('resize', () => {
+            clearTimeout(_relayoutTimer);
+            _relayoutTimer = setTimeout(() => { if (players.length) updateTable(); }, 150);
+        });
+
         function esc(s) {
             return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
@@ -250,47 +257,48 @@
             const regularPlayers = players.filter(p => !p.isModerator);
             const moderator = players.find(p => p.isModerator);
 
-            // Radius to put them on the rim (table is 100% width, max 800px)
-            const tableWidth = table.offsetWidth;
-            const tableHeight = table.offsetHeight;
+            // Seats sit on the rim (clientWidth excludes the wooden border)
+            const tableWidth = table.clientWidth;
+            const tableHeight = table.clientHeight;
+            const isMobile = window.matchMedia('(max-width: 600px)').matches;
             const baseRadius = Math.min(tableWidth, tableHeight) / 2;
-            const radiusPadding = tableWidth < 520 ? 50 : 35;
-            const radius = Math.max(0, baseRadius - radiusPadding); // Keep slots within bounds on mobile
+            // On phones, crowded tables push seats a little outside the rim so neighbours don't touch
+            const mobileOut = regularPlayers.length >= 6 ? 18 : 4;
+            const radius = Math.max(0, isMobile ? baseRadius + mobileOut : baseRadius - 35);
             const centerX = tableWidth / 2;
             const centerY = tableHeight / 2;
 
-            // Render regular players on the rim
+            // Render regular players on the rim; the slot is centred on its point via CSS `translate`
             if (regularPlayers.length > 0) {
                 regularPlayers.forEach((player, index) => {
                     const angle = (index / regularPlayers.length) * 2 * Math.PI - Math.PI / 2;
-                    // Position exactly on the rim. Adjusting by -40 (half of slot size) to center the slot on the line
-                    const x = centerX + radius * Math.cos(angle) - 40;
-                    const y = centerY + radius * Math.sin(angle) - 40;
+                    const x = centerX + radius * Math.cos(angle);
+                    const y = centerY + radius * Math.sin(angle);
 
                     const slot = document.createElement('div');
                     slot.className = 'player-slot';
+                    if (player.socketId === myId) slot.classList.add('is-me');
                     slot.id = `player-slot-${player.socketId}`;
                     slot.style.left = `${x}px`;
                     slot.style.top = `${y}px`;
 
-                    // Update the bid label if it already exists to avoid full redraw if possible,
-                    // but for now we're clearing and rebuilding. Let's make sure the data is correct.
                     const displayBid = player.lastBid || 0;
                     const displayTotal = player.totalBid || 0;
+                    const hasBid = displayTotal > 0;
 
                     slot.innerHTML = `
-                    <div class="player-bid-container">
-                        <div class="player-last-bid total-bid active" id="total-${player.socketId}">
-                            Total Bid: ₹${displayTotal}
+                    <div class="player-bid-container${hasBid ? '' : ' no-bid'}">
+                        <div class="player-last-bid total-bid${hasBid ? ' active' : ''}" id="total-${player.socketId}">
+                            <span class="bid-long">Total Bid: </span>₹${displayTotal}
                         </div>
-                        <div class="player-last-bid latest-bid active" id="bid-${player.socketId}">
-                            Latest Bid: ₹${displayBid}
+                        <div class="player-last-bid latest-bid${hasBid ? ' active' : ''}" id="bid-${player.socketId}">
+                            <span class="bid-long">Latest Bid: </span>₹${displayBid}
                         </div>
                     </div>
                     <div class="player-icon">${player.isModerator ? '👑' : '👤'}</div>
                     <div class="player-info-row">
                         <span class="player-wallet-label">₹${player.wallet}</span>
-                        <span class="player-name-label">${esc(player.name)}${player.isModerator ? ' (Admin)' : ''}</span>
+                        <span class="player-name-label" title="${esc(player.name)}">${esc(player.name)}${player.isModerator ? ' (Admin)' : ''}</span>
                     </div>
                 `;
 

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Righteous&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Righteous&display=swap');
 
 * {
     margin: 0;
@@ -927,9 +927,11 @@ h2 {
         font-size: 0.7em;
     }
 
+    /* Let the admin panel grow and the page scroll â€” a fixed 40vh clipped "Send Money" */
     .interaction-panel {
-        height: 40vh;
-        overflow: hidden;
+        height: auto;
+        overflow: visible;
+        margin: 0 auto 24px;
     }
 
     .admin-controls-container {
@@ -938,7 +940,7 @@ h2 {
         width: 100% !important;
         margin-left: 0 !important;
         gap: 10px !important;
-        height: 100%;
+        height: auto;
     }
 
     .card {
@@ -1105,9 +1107,9 @@ h2 {
     }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   LOGIN PAGE  –  full-screen particle bg + floating compact card
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   LOGIN PAGE  â€“  full-screen particle bg + floating compact card
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 /* Lock the login page to one screen, no scroll */
 body.login-page {
@@ -1132,7 +1134,7 @@ body.login-page #particle-canvas {
     display: block;
 }
 
-/* Compact card – wide, short, pinned to top */
+/* Compact card â€“ wide, short, pinned to top */
 .login-card {
     position: relative;
     z-index: 10;
@@ -1310,7 +1312,7 @@ body.login-page #particle-canvas {
     background: #000;
 }
 
-/* ── Join card glass form overrides ──────────────────────────────────────── */
+/* â”€â”€ Join card glass form overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .join-container {
     max-width: 480px;
     margin: 40px auto;
@@ -1407,4 +1409,155 @@ body.login-page #particle-canvas {
         padding: 14px;
         font-size: 1.1em;
     }
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   SEATS â€“ centred on their rim point (JS sets left/top to the point itself)
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+.player-slot { translate: -50% -50%; }
+.pool-legend { display: none; }
+.player-slot.is-me .player-icon { border-color: #ffd700; }
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   PHONE LAYOUT â€“ compact flat table, seats on the rim, readable names
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+@media (max-width: 600px) {
+    #game-view { padding-top: 4px; }
+
+    .table-container {
+        width: min(58vw, 38vh, 260px);
+        height: auto;
+        max-width: none;
+        max-height: none;
+        aspect-ratio: 1 / 1;
+        border-width: 6px;
+        margin: 76px auto 64px;
+        transform: none;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55), inset 0 -10px 24px rgba(0, 0, 0, 0.45);
+    }
+
+    /* Pool: small badge in the middle of the felt */
+    .pool-box {
+        min-width: 0;
+        padding: 6px 12px;
+        border-width: 2px;
+        border-radius: 12px;
+        transform: translate(-50%, -50%);
+    }
+    .pool-label { font-size: 0.6em; letter-spacing: 1px; margin-bottom: 2px; }
+    .pool-value { font-size: 1.25em; }
+
+    /* Seat: bid chips â†’ avatar â†’ name pill â†’ wallet */
+    .player-slot {
+        width: 84px;
+        height: auto;
+        transform: none;
+        z-index: 10;
+    }
+    .player-slot.is-me { z-index: 11; }
+
+    .player-bid-container {
+        height: auto;
+        min-height: 0;
+        margin-bottom: 2px;
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: center;
+        gap: 2px;
+        width: 100%;
+    }
+    .player-bid-container.no-bid { display: none; }
+
+    .player-total-bid,
+    .player-last-bid {
+        position: static;
+        transform: none;
+        padding: 1px 4px;
+        font-size: 9.5px;
+        letter-spacing: 0;
+        border-radius: 5px;
+        text-transform: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+    .bid-long { display: none; }
+
+    .pool-legend {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 3px;
+        margin-top: 2px;
+        font-size: 8.5px;
+        color: rgba(255, 255, 255, 0.8);
+        white-space: nowrap;
+    }
+    .pool-legend .dot { width: 7px; height: 7px; border-radius: 2px; display: inline-block; }
+    .pool-legend .dot-total { background: #764ba2; }
+    .pool-legend .dot-last { background: #ff4d4d; margin-left: 4px; }
+
+    .player-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 1em;
+        border-width: 2px;
+    }
+
+    .player-info-row {
+        flex-direction: column;
+        gap: 0;
+        padding: 2px 6px;
+        margin-top: 2px;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.82);
+        font-size: inherit;
+        max-width: 84px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .player-name-label {
+        order: -1;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.2;
+        max-width: 76px;
+        overflow: hidden;
+        white-space: normal;
+        overflow-wrap: break-word;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        text-align: center;
+    }
+    .player-wallet-label {
+        font-size: 11px;
+        line-height: 1.2;
+    }
+    .player-slot.is-me .player-info-row { box-shadow: 0 0 0 1.5px #ffd700; }
+}
+
+/* Admin controls on phones: tighter page padding, 3-up player buttons, big tap targets */
+@media (max-width: 600px) {
+    body { padding: 8px; }
+    .mod-controls h3 { font-size: 1.1em; margin: 6px 0 8px; }
+    .mod-section label { font-size: 0.9em; }
+    .winner-selection-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        margin-top: 6px;
+    }
+    .winner-box {
+        padding: 10px 4px;
+        min-height: 44px;
+        font-size: 0.9em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow-wrap: break-word;
+        line-height: 1.15;
+    }
+    .mod-section .quick-bet-buttons {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+    }
+    .mod-section .quick-bet-buttons button { min-height: 44px; padding: 10px 4px; }
 }
